@@ -163,7 +163,7 @@
             }, 120);
         }
 
-        // --- SISTEMA DE VOZ E PUSH-TO-TALK (LOCAL E GLOBAL) ---
+        // --- SISTEMA DE VOZ E PUSH-TO-TALK (CORRIGIDO) ---
         let streamMic = null;
         let micAtivo = false;
         let modoPTT = false;
@@ -174,7 +174,8 @@
 
         async function inicializarMicrofone() {
             if (!streamMic) {
-                streamMic = await navigator.mediaDevices.getUserMedia({
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-                    video: false
-                });
+                try {
+                    streamMic = await navigator.mediaDevices.getUserMedia({
+                        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+                        video: false
+                    });
