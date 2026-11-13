@@ -7,39 +7,42 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {
-        origin: "*"
-    },
+    cors: { origin: "*" },
     pingInterval: 10000,
     pingTimeout: 5000
 });
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// IDs das pessoas que estão compartilhando a tela.
+const participantes = new Map();
 const transmissores = new Set();
 
-function listarTransmissores() {
-    return Array.from(transmissores);
+function dadosTransmissores() {
+    return [...transmissores].map((id) => ({
+        id,
+        nickname: participantes.get(id) || "Participante"
+    }));
 }
 
 function atualizarLista() {
-    io.emit("lista-transmissores", listarTransmissores());
+    io.emit("lista-transmissores", dadosTransmissores());
 }
 
-function solicitarTelasPara(espectadorId) {
-    transmissores.forEach((transmissorId) => {
-        // Não solicitar a própria transmissão.
-        if (transmissorId === espectadorId) return;
+function pedirTela(transmissorId, espectadorId) {
+    if (
+        transmissorId === espectadorId ||
+        !transmissores.has(transmissorId) ||
+        !participantes.has(espectadorId)
+    ) {
+        return;
+    }
 
-        io.to(transmissorId).emit("pedir-tela", {
-            para: espectadorId
-        });
+    io.to(transmissorId).emit("pedir-tela", {
+        para: espectadorId
     });
 }
 
 function encerrarTransmissao(socket) {
-    // Só anuncia o encerramento se a pessoa estava transmitindo.
     if (!transmissores.delete(socket.id)) return;
 
     socket.broadcast.emit("parou-tela", {
@@ -47,73 +50,90 @@ function encerrarTransmissao(socket) {
     });
 
     atualizarLista();
-
-    console.log(`Transmissão encerrada: ${socket.id}`);
 }
 
 io.on("connection", (socket) => {
-    console.log(`Participante conectado: ${socket.id}`);
+    socket.on("registrar", (dados, responder) => {
+        const nickname = String(dados?.nickname || "")
+            .replace(/[\u0000-\u001f\u007f]/g, "")
+            .trim()
+            .slice(0, 24);
 
-    socket.emit("lista-transmissores", listarTransmissores());
+        if (!nickname) {
+            if (typeof responder === "function") {
+                responder({
+                    ok: false,
+                    erro: "Informe um nickname."
+                });
+            }
+            return;
+        }
 
-    // O cliente solicita as telas com "quero-assistir"
-    // depois de estabelecer a conexão.
+        participantes.set(socket.id, nickname);
+
+        if (typeof responder === "function") {
+            responder({
+                ok: true,
+                id: socket.id,
+                nickname
+            });
+        }
+
+        socket.emit("lista-transmissores", dadosTransmissores());
+        atualizarLista();
+    });
 
     socket.on("iniciou-tela", () => {
-        // Evita anunciar duas vezes a mesma transmissão.
+        if (!participantes.has(socket.id)) return;
         if (transmissores.has(socket.id)) return;
 
         transmissores.add(socket.id);
-
-        console.log(`Transmissão iniciada: ${socket.id}`);
-
         atualizarLista();
 
-        socket.broadcast.emit("solicitar-conexao", {
-            de: socket.id
+        socket.broadcast.emit("nova-transmissao", {
+            id: socket.id,
+            nickname: participantes.get(socket.id)
         });
     });
 
     socket.on("quero-assistir", (dados) => {
-        // Com "de", solicita uma transmissão específica.
-        const transmissorId = dados && dados.de;
+        if (!participantes.has(socket.id)) return;
 
-        if (typeof transmissorId === "string") {
-            if (
-                transmissorId !== socket.id &&
-                transmissores.has(transmissorId)
-            ) {
-                io.to(transmissorId).emit("pedir-tela", {
-                    para: socket.id
-                });
-            }
-
+        if (typeof dados?.de === "string") {
+            pedirTela(dados.de, socket.id);
             return;
         }
 
-        // Sem "de", solicita todas as transmissões ativas.
-        solicitarTelasPara(socket.id);
+        transmissores.forEach((id) => {
+            pedirTela(id, socket.id);
+        });
     });
 
     socket.on("sinal-tela", (dados) => {
+        if (!participantes.has(socket.id)) return;
+        if (!dados || typeof dados.para !== "string") return;
+        if (typeof dados.transmissor !== "string") return;
+        if (!dados.sinal || typeof dados.sinal !== "object") return;
+
+        const destino = dados.para;
+        const transmissor = dados.transmissor;
+
+        if (destino === socket.id) return;
+        if (!participantes.has(destino)) return;
+        if (!transmissores.has(transmissor)) return;
+
+        // A sinalização deve envolver o dono da transmissão.
         if (
-            !dados ||
-            typeof dados.para !== "string" ||
-            !dados.sinal ||
-            typeof dados.sinal !== "object"
+            socket.id !== transmissor &&
+            destino !== transmissor
         ) {
             return;
         }
 
-        const destinatarioId = dados.para;
-
-        if (destinatarioId === socket.id) return;
-
-        if (!io.sockets.sockets.has(destinatarioId)) return;
-
-        io.to(destinatarioId).emit("sinal-tela", {
-            // A identidade vem da conexão, não dos dados enviados.
+        io.to(destino).emit("sinal-tela", {
             de: socket.id,
+            transmissor,
+            nickname: participantes.get(transmissor),
             sinal: dados.sinal
         });
     });
@@ -124,19 +144,16 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         encerrarTransmissao(socket);
+        participantes.delete(socket.id);
 
         socket.broadcast.emit("participante-saiu", {
             de: socket.id
         });
-
-        console.log(`Participante desconectado: ${socket.id}`);
     });
 });
 
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-    console.log(
-        `Servidor APP G.A.S oficial rodando na porta ${PORT}`
-    );
+    console.log(`APP G.A.S rodando na porta ${PORT}`);
 });
