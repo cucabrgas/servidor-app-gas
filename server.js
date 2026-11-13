@@ -191,4 +191,48 @@ io.on("connection", (socket) => {
         if (!dados || typeof dados.para !== "string") return;
         if (typeof dados.transmissor !== "string") return;
         if (!dados.sinal || typeof dados.sinal !== "object") return;
-        if (dados.para
+        if (dados.para === socket.id) return;
+        if (!participantes.has(dados.para)) return;
+        if (!transmissores.has(dados.transmissor)) return;
+
+        if (
+            socket.id !== dados.transmissor &&
+            dados.para !== dados.transmissor
+        ) {
+            return;
+        }
+
+        io.to(dados.para).emit("sinal-tela", {
+            de: socket.id,
+            transmissor: dados.transmissor,
+            nickname: participantes.get(dados.transmissor).nickname,
+            sinal: dados.sinal
+        });
+    });
+
+    socket.on("parou-tela", () => {
+        encerrarTransmissao(socket);
+    });
+
+    socket.on("disconnect", () => {
+        const pessoa = participantes.get(socket.id);
+
+        encerrarTransmissao(socket);
+        participantes.delete(socket.id);
+
+        socket.broadcast.emit("participante-saiu", {
+            de: socket.id
+        });
+
+        if (pessoa) {
+            atualizarListas();
+            aviso(`${pessoa.nickname} saiu da sala.`);
+        }
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+
+server.listen(PORT, () => {
+    console.log(`Servidor APP G.A.S oficial rodando na porta ${PORT}`);
+});
