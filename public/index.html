@@ -7,14 +7,11 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0e100e; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
         #topo { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #181c18; border-bottom: 2px solid #8b2626; }
         #topo h1 { margin: 0; font-size: 16px; color: #d4af37; letter-spacing: 0.5px; }
-
         #tela-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; position: relative; }
         video { width: 100%; max-width: 1400px; max-height: 80vh; border-radius: 8px; background: #000; display: none; border: 1px solid #d4af37; cursor: pointer; }
         #aviso-tela { color: #8c968c; font-size: 1.05rem; text-align: center; }
-
         #controles { position: absolute; bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; background: #181c18; padding: 10px 18px; border-radius: 8px; border: 1px solid #2f362f; z-index: 10; }
         button { padding: 9px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; }
         button:hover { opacity: 0.9; }
@@ -23,7 +20,6 @@
         .btn-dourado { background: #d4af37; color: #141714; }
         .btn-cinza { background: #3f443f; color: #fff; }
         #status-link { font-size: 12px; color: #23a559; font-weight: bold; }
-
         .controle-vol-tela { display: none; align-items: center; gap: 6px; background: #252b25; padding: 7px 12px; border-radius: 5px; font-size: 13px; color: #d4af37; }
         .controle-vol-tela input[type="range"] { width: 85px; cursor: pointer; accent-color: #d4af37; padding: 0; }
     </style>
@@ -44,19 +40,17 @@
         <div id="controles">
             <button type="button" id="btn-compartilhar" class="btn-verde" onclick="iniciarTela()">🖥️ Compartilhar Tela</button>
             <button type="button" id="btn-parar" class="btn-vermelho" style="display:none;" onclick="pararTela()">⏹️ Parar Transmissão</button>
-            
             <div id="box-vol-tela" class="controle-vol-tela" title="Volume do áudio compartilhado">
                 <span>🔊</span>
                 <input type="range" id="slider-vol-tela" min="0" max="1" step="0.05" value="0.8" oninput="mudarVolume(this.value)">
             </div>
-
             <button type="button" id="btn-fullscreen" class="btn-cinza" style="display:none;" onclick="telaCheia()">⛶ Tela Cheia</button>
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://socket.io"></script>
     <script>
-        var socket = io();
+        var socket = null;
         var streamTela = null;
         var conexoesTela = {};
         var configIce = {
@@ -84,10 +78,10 @@
                 document.getElementById('btn-fullscreen').style.display = 'inline-block';
                 document.getElementById('box-vol-tela').style.display = 'none';
 
-                var faixa = streamTela.getVideoTracks().at(0);
+                var faixa = streamTela.getVideoTracks()[0];
                 if (faixa) faixa.onended = pararTela;
 
-                socket.emit('iniciou-tela');
+                if (socket) socket.emit('iniciou-tela');
             } catch (err) {
                 if (err.name !== 'NotAllowedError') {
                     alert('Erro ao capturar tela: ' + err.message);
@@ -116,7 +110,7 @@
             document.getElementById('btn-fullscreen').style.display = 'none';
             document.getElementById('box-vol-tela').style.display = 'none';
 
-            socket.emit('parou-tela');
+            if (socket) socket.emit('parou-tela');
         }
 
         function copiarLink() {
@@ -143,77 +137,72 @@
 
         document.getElementById('video-tela').addEventListener('dblclick', telaCheia);
 
-        socket.on('solicitar-conexao', function() {
-            if (!streamTela) {
-                socket.emit('quero-assistir');
-            }
-        });
+        try {
+            socket = io();
 
-        socket.on('pedir-tela', async function(dados) {
-            if (!streamTela || !dados.para) return;
-            var idEspectador = dados.para;
-            if (conexoesTela[idEspectador]) conexoesTela[idEspectador].close();
-
-            var pc = new RTCPeerConnection(configIce);
-            conexoesTela[idEspectador] = pc;
-            streamTela.getTracks().forEach(function(track) {
-                pc.addTrack(track, streamTela);
+            socket.on('solicitar-conexao', function() {
+                if (!streamTela) socket.emit('quero-assistir');
             });
 
-            pc.onicecandidate = function(e) {
-                if (e.candidate) {
-                    socket.emit('sinal-tela', { para: idEspectador, sinal: { candidate: e.candidate } });
-                }
-            };
+            socket.on('pedir-tela', async function(dados) {
+                if (!streamTela || !dados.para) return;
+                var idEspectador = dados.para;
+                if (conexoesTela[idEspectador]) conexoesTela[idEspectador].close();
 
-            var oferta = await pc.createOffer();
-            await pc.setLocalDescription(oferta);
-            socket.emit('sinal-tela', { para: idEspectador, sinal: { sdp: pc.localDescription } });
-        });
+                var pc = new RTCPeerConnection(configIce);
+                conexoesTela[idEspectador] = pc;
+                streamTela.getTracks().forEach(function(track) {
+                    pc.addTrack(track, streamTela);
+                });
 
-        socket.on('sinal-tela', async function(dados) {
-            var idRemetente = dados.de;
-            var pc = conexoesTela[idRemetente];
-
-            if (!pc) {
-                pc = new RTCPeerConnection(configIce);
-                conexoesTela[idRemetente] = pc;
-                pc.ontrack = function(e) {
-                    var streamRecebido = e.streams.at(0);
-                    if (streamRecebido) {
-                        var video = document.getElementById('video-tela');
-                        video.srcObject = streamRecebido;
-                        video.style.display = 'block';
-                        video.muted = false;
-                        video.volume = parseFloat(document.getElementById('slider-vol-tela').value);
-
-                        document.getElementById('aviso-tela').style.display = 'none';
-                        document.getElementById('btn-fullscreen').style.display = 'inline-block';
-                        document.getElementById('box-vol-tela').style.display = 'flex';
-                    }
-                };
                 pc.onicecandidate = function(e) {
                     if (e.candidate) {
-                        socket.emit('sinal-tela', { para: idRemetente, sinal: { candidate: e.candidate } });
+                        socket.emit('sinal-tela', { para: idEspectador, sinal: { candidate: e.candidate } });
                     }
                 };
-            }
 
-            if (dados.sinal.sdp) {
-                await pc.setRemoteDescription(new RTCSessionDescription(dados.sinal.sdp));
-                if (dados.sinal.sdp.type === 'offer') {
-                    var resposta = await pc.createAnswer();
-                    await pc.setLocalDescription(resposta);
-                    socket.emit('sinal-tela', { para: idRemetente, sinal: { sdp: pc.localDescription } });
+                var oferta = await pc.createOffer();
+                await pc.setLocalDescription(oferta);
+                socket.emit('sinal-tela', { para: idEspectador, sinal: { sdp: pc.localDescription } });
+            });
+
+            socket.on('sinal-tela', async function(dados) {
+                var idRemetente = dados.de;
+                var pc = conexoesTela[idRemetente];
+
+                if (!pc) {
+                    pc = new RTCPeerConnection(configIce);
+                    conexoesTela[idRemetente] = pc;
+                    pc.ontrack = function(e) {
+                        var streamRecebido = e.streams[0];
+                        if (streamRecebido) {
+                            var video = document.getElementById('video-tela');
+                            video.srcObject = streamRecebido;
+                            video.style.display = 'block';
+                            video.muted = false;
+                            video.volume = parseFloat(document.getElementById('slider-vol-tela').value);
+
+                            document.getElementById('aviso-tela').style.display = 'none';
+                            document.getElementById('btn-fullscreen').style.display = 'inline-block';
+                            document.getElementById('box-vol-tela').style.display = 'flex';
+                        }
+                    };
+                    pc.onicecandidate = function(e) {
+                        if (e.candidate) {
+                            socket.emit('sinal-tela', { para: idRemetente, sinal: { candidate: e.candidate } });
+                        }
+                    };
                 }
-            } else if (dados.sinal.candidate) {
-                await pc.addIceCandidate(new RTCIceCandidate(dados.sinal.candidate));
-            }
-        });
 
-        socket.on('parou-tela', function() {
-            if (!streamTela) {
-                Object.keys(conexoesTela).forEach(function(id) {
-                    conexoesTela[id].close();
-                    delete conexoesTela[id];
-                });
+                if (dados.sinal.sdp) {
+                    await pc.setRemoteDescription(new RTCSessionDescription(dados.sinal.sdp));
+                    if (dados.sinal.sdp.type === 'offer') {
+                        var resposta = await pc.createAnswer();
+                        await pc.setLocalDescription(resposta);
+                        socket.emit('sinal-tela', { para: idRemetente, sinal: { sdp: pc.localDescription } });
+                    }
+                } else if (dados.sinal.candidate) {
+                    await pc.addIceCandidate(new RTCIceCandidate(dados.sinal.candidate));
+                }
+            });
+
