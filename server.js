@@ -71,18 +71,18 @@ function pedirTela(transmissor, espectador) {
 
 io.on("connection", (socket) => {
     socket.on("registrar", (dados, responder) => {
-        const responderSePossivel = (resposta) => {
+        const resposta = (conteudo) => {
             if (typeof responder === "function") {
-                responder(resposta);
+                responder(conteudo);
             }
         };
 
-        // O nickname não é alterado durante a mesma conexão.
         if (participantes.has(socket.id)) {
-            return responderSePossivel({
+            resposta({
                 ok: true,
                 nickname: participantes.get(socket.id).nickname
             });
+            return;
         }
 
         const nickname = String(dados?.nickname || "")
@@ -91,10 +91,11 @@ io.on("connection", (socket) => {
             .slice(0, 24);
 
         if (!nickname) {
-            return responderSePossivel({
+            resposta({
                 ok: false,
                 erro: "Digite seu nickname."
             });
+            return;
         }
 
         const repetido = [...participantes.values()].some(
@@ -104,10 +105,11 @@ io.on("connection", (socket) => {
         );
 
         if (repetido) {
-            return responderSePossivel({
+            resposta({
                 ok: false,
                 erro: "Esse nickname já está em uso."
             });
+            return;
         }
 
         participantes.set(socket.id, {
@@ -115,7 +117,7 @@ io.on("connection", (socket) => {
             ultimaMensagem: 0
         });
 
-        responderSePossivel({ ok: true, nickname });
+        resposta({ ok: true, nickname });
 
         socket.emit("historico-chat", historicoChat);
         atualizarListas();
@@ -126,7 +128,10 @@ io.on("connection", (socket) => {
         const pessoa = participantes.get(socket.id);
         if (!pessoa) return;
 
-        const texto = String(dados?.texto || "").trim().slice(0, 500);
+        const texto = String(dados?.texto || "")
+            .trim()
+            .slice(0, 500);
+
         if (!texto) return;
 
         const agora = Date.now();
@@ -181,9 +186,12 @@ io.on("connection", (socket) => {
 
         if (typeof dados?.de === "string") {
             pedirTela(dados.de, socket.id);
-        } else {
-            transmissores.forEach((id) => pedirTela(id, socket.id));
+            return;
         }
+
+        transmissores.forEach((id) => {
+            pedirTela(id, socket.id);
+        });
     });
 
     socket.on("sinal-tela", (dados) => {
