@@ -13,42 +13,22 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-const operadores = {};
 let transmissorAtual = null;
 
 io.on('connection', (socket) => {
-    socket.on('entrar-sala', (nome) => {
-        operadores[socket.id] = nome || 'Operador';
-        io.emit('lista-operadores', operadores);
-        socket.broadcast.emit('novo-usuario-voz', { id: socket.id, nome: operadores[socket.id] });
-
-        if (transmissorAtual && operadores[transmissorAtual]) {
-            io.to(transmissorAtual).emit('pedir-tela', { para: socket.id });
-        }
-    });
-
-    socket.on('chat-msg', (msg) => {
-        const textoLimpo = String(msg).slice(0, 400);
-        io.emit('chat-msg', {
-            usuario: operadores[socket.id] || 'Operador',
-            texto: textoLimpo
-        });
-    });
-
-    socket.on('sinal-voz', (dados) => {
-        io.to(dados.para).emit('sinal-voz', {
-            de: socket.id,
-            sinal: dados.sinal
-        });
-    });
+    if (transmissorAtual) {
+        io.to(transmissorAtual).emit('pedir-tela', { para: socket.id });
+    }
 
     socket.on('iniciou-tela', () => {
         transmissorAtual = socket.id;
-        Object.keys(operadores).forEach((idOp) => {
-            if (idOp !== socket.id) {
-                socket.emit('pedir-tela', { para: idOp });
-            }
-        });
+        socket.broadcast.emit('solicitar-conexao');
+    });
+
+    socket.on('quero-assistir', () => {
+        if (transmissorAtual && transmissorAtual !== socket.id) {
+            io.to(transmissorAtual).emit('pedir-tela', { para: socket.id });
+        }
     });
 
     socket.on('sinal-tela', (dados) => {
@@ -72,9 +52,6 @@ io.on('connection', (socket) => {
             transmissorAtual = null;
             socket.broadcast.emit('parou-tela');
         }
-        delete operadores[socket.id];
-        io.emit('lista-operadores', operadores);
-        socket.broadcast.emit('usuario-saiu-voz', socket.id);
     });
 });
 
