@@ -16,29 +16,32 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const participantes = new Map();
 const transmissores = new Set();
+const historicoChat = [];
 
-function dadosTransmissores() {
-    return [...transmissores].map((id) => ({
+function listaParticipantes() {
+    return [...participantes.entries()].map(([id, pessoa]) => ({
         id,
-        nickname: participantes.get(id) || "Participante"
+        nickname: pessoa.nickname,
+        compartilhando: transmissores.has(id)
     }));
 }
 
-function atualizarLista() {
-    io.emit("lista-transmissores", dadosTransmissores());
+function listaTransmissores() {
+    return [...transmissores].map((id) => ({
+        id,
+        nickname: participantes.get(id)?.nickname || "Participante"
+    }));
 }
 
-function pedirTela(transmissorId, espectadorId) {
-    if (
-        transmissorId === espectadorId ||
-        !transmissores.has(transmissorId) ||
-        !participantes.has(espectadorId)
-    ) {
-        return;
-    }
+function atualizarListas() {
+    io.emit("lista-participantes", listaParticipantes());
+    io.emit("lista-transmissores", listaTransmissores());
+}
 
-    io.to(transmissorId).emit("pedir-tela", {
-        para: espectadorId
+function aviso(texto) {
+    io.emit("aviso-chat", {
+        texto,
+        horario: Date.now()
     });
 }
 
@@ -49,38 +52,115 @@ function encerrarTransmissao(socket) {
         de: socket.id
     });
 
-    atualizarLista();
+    atualizarListas();
+}
+
+function pedirTela(transmissor, espectador) {
+    if (
+        transmissor === espectador ||
+        !transmissores.has(transmissor) ||
+        !participantes.has(espectador)
+    ) {
+        return;
+    }
+
+    io.to(transmissor).emit("pedir-tela", {
+        para: espectador
+    });
 }
 
 io.on("connection", (socket) => {
     socket.on("registrar", (dados, responder) => {
+        const responderSePossivel = (resposta) => {
+            if (typeof responder === "function") {
+                responder(resposta);
+            }
+        };
+
+        // O nickname não é alterado durante a mesma conexão.
+        if (participantes.has(socket.id)) {
+            return responderSePossivel({
+                ok: true,
+                nickname: participantes.get(socket.id).nickname
+            });
+        }
+
         const nickname = String(dados?.nickname || "")
             .replace(/[\u0000-\u001f\u007f]/g, "")
             .trim()
             .slice(0, 24);
 
         if (!nickname) {
+            return responderSePossivel({
+                ok: false,
+                erro: "Digite seu nickname."
+            });
+        }
+
+        const repetido = [...participantes.values()].some(
+            (pessoa) =>
+                pessoa.nickname.toLocaleLowerCase("pt-BR") ===
+                nickname.toLocaleLowerCase("pt-BR")
+        );
+
+        if (repetido) {
+            return responderSePossivel({
+                ok: false,
+                erro: "Esse nickname já está em uso."
+            });
+        }
+
+        participantes.set(socket.id, {
+            nickname,
+            ultimaMensagem: 0
+        });
+
+        responderSePossivel({ ok: true, nickname });
+
+        socket.emit("historico-chat", historicoChat);
+        atualizarListas();
+        aviso(`${nickname} entrou na sala.`);
+    });
+
+    socket.on("mensagem-chat", (dados, responder) => {
+        const pessoa = participantes.get(socket.id);
+        if (!pessoa) return;
+
+        const texto = String(dados?.texto || "").trim().slice(0, 500);
+        if (!texto) return;
+
+        const agora = Date.now();
+
+        if (agora - pessoa.ultimaMensagem < 800) {
             if (typeof responder === "function") {
                 responder({
                     ok: false,
-                    erro: "Informe um nickname."
+                    erro: "Aguarde um instante entre as mensagens."
                 });
             }
             return;
         }
 
-        participantes.set(socket.id, nickname);
+        pessoa.ultimaMensagem = agora;
 
-        if (typeof responder === "function") {
-            responder({
-                ok: true,
-                id: socket.id,
-                nickname
-            });
+        const mensagem = {
+            de: socket.id,
+            nickname: pessoa.nickname,
+            texto,
+            horario: agora
+        };
+
+        historicoChat.push(mensagem);
+
+        if (historicoChat.length > 100) {
+            historicoChat.shift();
         }
 
-        socket.emit("lista-transmissores", dadosTransmissores());
-        atualizarLista();
+        io.emit("mensagem-chat", mensagem);
+
+        if (typeof responder === "function") {
+            responder({ ok: true });
+        }
     });
 
     socket.on("iniciou-tela", () => {
@@ -88,11 +168,11 @@ io.on("connection", (socket) => {
         if (transmissores.has(socket.id)) return;
 
         transmissores.add(socket.id);
-        atualizarLista();
+        atualizarListas();
 
         socket.broadcast.emit("nova-transmissao", {
             id: socket.id,
-            nickname: participantes.get(socket.id)
+            nickname: participantes.get(socket.id).nickname
         });
     });
 
@@ -101,12 +181,9 @@ io.on("connection", (socket) => {
 
         if (typeof dados?.de === "string") {
             pedirTela(dados.de, socket.id);
-            return;
+        } else {
+            transmissores.forEach((id) => pedirTela(id, socket.id));
         }
-
-        transmissores.forEach((id) => {
-            pedirTela(id, socket.id);
-        });
     });
 
     socket.on("sinal-tela", (dados) => {
@@ -114,46 +191,4 @@ io.on("connection", (socket) => {
         if (!dados || typeof dados.para !== "string") return;
         if (typeof dados.transmissor !== "string") return;
         if (!dados.sinal || typeof dados.sinal !== "object") return;
-
-        const destino = dados.para;
-        const transmissor = dados.transmissor;
-
-        if (destino === socket.id) return;
-        if (!participantes.has(destino)) return;
-        if (!transmissores.has(transmissor)) return;
-
-        // A sinalização deve envolver o dono da transmissão.
-        if (
-            socket.id !== transmissor &&
-            destino !== transmissor
-        ) {
-            return;
-        }
-
-        io.to(destino).emit("sinal-tela", {
-            de: socket.id,
-            transmissor,
-            nickname: participantes.get(transmissor),
-            sinal: dados.sinal
-        });
-    });
-
-    socket.on("parou-tela", () => {
-        encerrarTransmissao(socket);
-    });
-
-    socket.on("disconnect", () => {
-        encerrarTransmissao(socket);
-        participantes.delete(socket.id);
-
-        socket.broadcast.emit("participante-saiu", {
-            de: socket.id
-        });
-    });
-});
-
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-    console.log(`APP G.A.S rodando na porta ${PORT}`);
-});
+        if (dados.para
