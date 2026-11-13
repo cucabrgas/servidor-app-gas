@@ -1,208 +1,649 @@
+Segue o HTML completo corrigido. Substitua o conteúdo do seu arquivo por este:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APP G.A.S oficial</title>
+    <title>APP G.A.S Oficial</title>
+
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0e100e; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        #topo { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #181c18; border-bottom: 2px solid #8b2626; }
-        #topo h1 { margin: 0; font-size: 16px; color: #d4af37; letter-spacing: 0.5px; }
-        #tela-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; position: relative; }
-        video { width: 100%; max-width: 1400px; max-height: 80vh; border-radius: 8px; background: #000; display: none; border: 1px solid #d4af37; cursor: pointer; }
-        #aviso-tela { color: #8c968c; font-size: 1.05rem; text-align: center; }
-        #controles { position: absolute; bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; background: #181c18; padding: 10px 18px; border-radius: 8px; border: 1px solid #2f362f; z-index: 10; }
-        button { padding: 9px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; }
-        button:hover { opacity: 0.9; }
-        .btn-verde { background: #23a559; color: #fff; }
-        .btn-vermelho { background: #da373c; color: #fff; }
-        .btn-dourado { background: #d4af37; color: #141714; }
-        .btn-cinza { background: #3f443f; color: #fff; }
-        #status-link { font-size: 12px; color: #23a559; font-weight: bold; }
-        .controle-vol-tela { display: none; align-items: center; gap: 6px; background: #252b25; padding: 7px 12px; border-radius: 5px; font-size: 13px; color: #d4af37; }
-        .controle-vol-tela input[type="range"] { width: 85px; cursor: pointer; accent-color: #d4af37; padding: 0; }
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #0e100e;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #topo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 20px;
+            background: #181c18;
+            border-bottom: 2px solid #8b2626;
+        }
+
+        #topo h1 {
+            margin: 0;
+            font-size: 16px;
+            color: #d4af37;
+            letter-spacing: 0.5px;
+        }
+
+        #tela-container {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 15px 100px;
+            position: relative;
+        }
+
+        video {
+            width: 100%;
+            max-width: 1400px;
+            max-height: 75vh;
+            border-radius: 8px;
+            background: #000;
+            display: none;
+            border: 1px solid #d4af37;
+            cursor: pointer;
+            object-fit: contain;
+        }
+
+        #aviso-tela {
+            color: #8c968c;
+            font-size: 1.05rem;
+            text-align: center;
+        }
+
+        #controles {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            right: 15px;
+            width: fit-content;
+            max-width: calc(100% - 30px);
+            margin: auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: #181c18;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid #2f362f;
+            z-index: 10;
+        }
+
+        button {
+            padding: 9px 16px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-verde {
+            background: #23a559;
+            color: #fff;
+        }
+
+        .btn-vermelho {
+            background: #da373c;
+            color: #fff;
+        }
+
+        .btn-dourado {
+            background: #d4af37;
+            color: #141714;
+        }
+
+        .btn-cinza {
+            background: #3f443f;
+            color: #fff;
+        }
+
+        #status-link {
+            font-size: 12px;
+            color: #23a559;
+            font-weight: bold;
+        }
+
+        .controle-vol-tela {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: #252b25;
+            padding: 7px 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #d4af37;
+        }
+
+        .controle-vol-tela input[type="range"] {
+            width: 85px;
+            cursor: pointer;
+            accent-color: #d4af37;
+            padding: 0;
+        }
+
+        @media (max-width: 600px) {
+            #topo {
+                padding: 10px;
+                flex-wrap: wrap;
+            }
+
+            #topo h1 {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div id="topo">
         <h1>APP G.A.S OFICIAL — TRANSMISSÃO</h1>
+
         <div>
-            <button type="button" class="btn-dourado" onclick="copiarLink()">🔗 Copiar Link</button>
-            <span id="status-link"></span>
+            <button
+                type="button"
+                class="btn-dourado"
+                onclick="copiarLink()"
+            >
+                Copiar Link
+            </button>
+
+            <span id="status-link" role="status"></span>
         </div>
     </div>
 
     <div id="tela-container">
-        <div id="aviso-tela">Nenhuma transmissão ativa. Clique em "Compartilhar Tela" abaixo para iniciar.</div>
+        <div id="aviso-tela" role="status">
+            Nenhuma transmissão ativa.
+            Clique em "Compartilhar Tela" abaixo para iniciar.
+        </div>
+
         <video id="video-tela" autoplay playsinline></video>
-        
+
         <div id="controles">
-            <button type="button" id="btn-compartilhar" class="btn-verde" onclick="iniciarTela()">🖥️ Compartilhar Tela</button>
-            <button type="button" id="btn-parar" class="btn-vermelho" style="display:none;" onclick="pararTela()">⏹️ Parar Transmissão</button>
-            <div id="box-vol-tela" class="controle-vol-tela" title="Volume do áudio compartilhado">
-                <span>🔊</span>
-                <input type="range" id="slider-vol-tela" min="0" max="1" step="0.05" value="0.8" oninput="mudarVolume(this.value)">
+            <button
+                type="button"
+                id="btn-compartilhar"
+                class="btn-verde"
+                onclick="iniciarTela()"
+            >
+                Compartilhar Tela
+            </button>
+
+            <button
+                type="button"
+                id="btn-parar"
+                class="btn-vermelho"
+                style="display: none;"
+                onclick="pararTela()"
+            >
+                Parar Transmissão
+            </button>
+
+            <button
+                type="button"
+                id="btn-reproduzir"
+                class="btn-verde"
+                style="display: none;"
+                onclick="reproduzirVideo()"
+            >
+                Reproduzir transmissão
+            </button>
+
+            <div
+                id="box-vol-tela"
+                class="controle-vol-tela"
+                title="Volume do áudio compartilhado"
+            >
+                <label for="slider-vol-tela">Volume</label>
+
+                <input
+                    type="range"
+                    id="slider-vol-tela"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.8"
+                    oninput="mudarVolume(this.value)"
+                >
             </div>
-            <button type="button" id="btn-fullscreen" class="btn-cinza" style="display:none;" onclick="telaCheia()">⛶ Tela Cheia</button>
+
+            <button
+                type="button"
+                id="btn-fullscreen"
+                class="btn-cinza"
+                style="display: none;"
+                onclick="telaCheia()"
+            >
+                Tela Cheia
+            </button>
         </div>
     </div>
 
-    <script src="https://socket.io"></script>
+    <!-- Cliente fornecido pelo seu servidor Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+
     <script>
         var socket = null;
         var streamTela = null;
         var conexoesTela = {};
+        var candidatosPendentes = {};
+        var filasSinalizacao = {};
+
         var configIce = {
             iceServers: [
-                { urls: 'stun:://google.com' },
-                { urls: 'stun:://google.com' }
+                { urls: "stun:stun.l.google.com:19302" }
             ]
         };
 
-        async function iniciarTela() {
+        var video = document.getElementById("video-tela");
+        var aviso = document.getElementById("aviso-tela");
+        var btnCompartilhar = document.getElementById("btn-compartilhar");
+        var btnParar = document.getElementById("btn-parar");
+        var btnFullscreen = document.getElementById("btn-fullscreen");
+        var btnReproduzir = document.getElementById("btn-reproduzir");
+        var boxVolume = document.getElementById("box-vol-tela");
+        var sliderVolume = document.getElementById("slider-vol-tela");
+
+        function mostrarVideo(transmitindo) {
+            video.style.display = "block";
+            aviso.style.display = "none";
+            btnCompartilhar.style.display = "none";
+            btnParar.style.display = transmitindo ? "inline-block" : "none";
+            btnFullscreen.style.display = "inline-block";
+            boxVolume.style.display = transmitindo ? "none" : "flex";
+            btnReproduzir.style.display = "none";
+        }
+
+        function limparVideo() {
+            video.pause();
+            video.srcObject = null;
+            video.style.display = "none";
+            video.muted = true;
+
+            aviso.textContent =
+                'Nenhuma transmissão ativa. Clique em "Compartilhar Tela" abaixo para iniciar.';
+
+            aviso.style.display = "block";
+            btnCompartilhar.style.display = "inline-block";
+            btnParar.style.display = "none";
+            btnFullscreen.style.display = "none";
+            btnReproduzir.style.display = "none";
+            boxVolume.style.display = "none";
+        }
+
+        async function reproduzirVideo() {
             try {
-                streamTela = await navigator.mediaDevices.getDisplayMedia({
+                await video.play();
+                btnReproduzir.style.display = "none";
+            } catch (err) {
+                console.warn("Não foi possível reproduzir o vídeo:", err);
+                btnReproduzir.style.display = "inline-block";
+            }
+        }
+
+        function fecharConexoes() {
+            Object.keys(conexoesTela).forEach(function(id) {
+                var pc = conexoesTela[id];
+
+                pc.ontrack = null;
+                pc.onicecandidate = null;
+                pc.close();
+            });
+
+            conexoesTela = {};
+            candidatosPendentes = {};
+        }
+
+        async function iniciarTela() {
+            if (streamTela) return;
+
+            if (!navigator.mediaDevices ||
+                !navigator.mediaDevices.getDisplayMedia) {
+                alert(
+                    "Captura de tela indisponível. " +
+                    "Acesse por HTTPS ou localhost em um navegador compatível."
+                );
+                return;
+            }
+
+            btnCompartilhar.disabled = true;
+
+            try {
+                var stream = await navigator.mediaDevices.getDisplayMedia({
                     video: true,
                     audio: true
                 });
 
-                var video = document.getElementById('video-tela');
+                fecharConexoes();
+                streamTela = stream;
+
                 video.srcObject = streamTela;
-                video.style.display = 'block';
                 video.muted = true;
 
-                document.getElementById('aviso-tela').style.display = 'none';
-                document.getElementById('btn-compartilhar').style.display = 'none';
-                document.getElementById('btn-parar').style.display = 'inline-block';
-                document.getElementById('btn-fullscreen').style.display = 'inline-block';
-                document.getElementById('box-vol-tela').style.display = 'none';
+                mostrarVideo(true);
+                await reproduzirVideo();
 
                 var faixa = streamTela.getVideoTracks()[0];
-                if (faixa) faixa.onended = pararTela;
 
-                if (socket) socket.emit('iniciou-tela');
-            } catch (err) {
-                if (err.name !== 'NotAllowedError') {
-                    alert('Erro ao capturar tela: ' + err.message);
+                if (faixa) {
+                    faixa.onended = function() {
+                        pararTela();
+                    };
                 }
+
+                if (socket && socket.connected) {
+                    socket.emit("iniciou-tela");
+                } else {
+                    console.warn(
+                        "Captura local iniciada, mas o servidor de sinalização não está conectado."
+                    );
+                }
+            } catch (err) {
+                console.error("Erro ao capturar tela:", err);
+
+                if (err.name !== "NotAllowedError" &&
+                    err.name !== "AbortError") {
+                    alert("Erro ao capturar tela: " + err.message);
+                }
+            } finally {
+                btnCompartilhar.disabled = false;
             }
         }
 
-        function pararTela() {
+        async function pararTela() {
+            var estavaTransmitindo = Boolean(streamTela);
+
             if (streamTela) {
-                streamTela.getTracks().forEach(function(t) { t.stop(); });
-                streamTela = null;
-            }
-            Object.keys(conexoesTela).forEach(function(id) {
-                conexoesTela[id].close();
-                delete conexoesTela[id];
-            });
-
-            if (document.fullscreenElement) document.exitFullscreen();
-            var video = document.getElementById('video-tela');
-            video.srcObject = null;
-            video.style.display = 'none';
-
-            document.getElementById('aviso-tela').style.display = 'block';
-            document.getElementById('btn-compartilhar').style.display = 'inline-block';
-            document.getElementById('btn-parar').style.display = 'none';
-            document.getElementById('btn-fullscreen').style.display = 'none';
-            document.getElementById('box-vol-tela').style.display = 'none';
-
-            if (socket) socket.emit('parou-tela');
-        }
-
-        function copiarLink() {
-            navigator.clipboard.writeText(window.location.href);
-            var st = document.getElementById('status-link');
-            st.innerText = ' Copiado!';
-            setTimeout(function() { st.innerText = ''; }, 2500);
-        }
-
-        function mudarVolume(val) {
-            var video = document.getElementById('video-tela');
-            video.volume = parseFloat(val);
-            video.muted = (parseFloat(val) === 0);
-        }
-
-        function telaCheia() {
-            var video = document.getElementById('video-tela');
-            if (!document.fullscreenElement) {
-                if (video.requestFullscreen) video.requestFullscreen();
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-            }
-        }
-
-        document.getElementById('video-tela').addEventListener('dblclick', telaCheia);
-
-        try {
-            socket = io();
-
-            socket.on('solicitar-conexao', function() {
-                if (!streamTela) socket.emit('quero-assistir');
-            });
-
-            socket.on('pedir-tela', async function(dados) {
-                if (!streamTela || !dados.para) return;
-                var idEspectador = dados.para;
-                if (conexoesTela[idEspectador]) conexoesTela[idEspectador].close();
-
-                var pc = new RTCPeerConnection(configIce);
-                conexoesTela[idEspectador] = pc;
                 streamTela.getTracks().forEach(function(track) {
-                    pc.addTrack(track, streamTela);
+                    track.onended = null;
+                    track.stop();
                 });
 
-                pc.onicecandidate = function(e) {
-                    if (e.candidate) {
-                        socket.emit('sinal-tela', { para: idEspectador, sinal: { candidate: e.candidate } });
+                streamTela = null;
+            }
+
+            fecharConexoes();
+
+            if (document.fullscreenElement) {
+                try {
+                    await document.exitFullscreen();
+                } catch (err) {
+                    console.warn("Erro ao sair da tela cheia:", err);
+                }
+            }
+
+            limparVideo();
+
+            if (estavaTransmitindo && socket && socket.connected) {
+                socket.emit("parou-tela");
+            }
+        }
+
+        async function copiarLink() {
+            var status = document.getElementById("status-link");
+
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+
+                status.textContent = " Copiado!";
+
+                setTimeout(function() {
+                    status.textContent = "";
+                }, 2500);
+            } catch (err) {
+                console.warn("Erro ao copiar link:", err);
+                window.prompt("Copie o link abaixo:", window.location.href);
+            }
+        }
+
+        function mudarVolume(valor) {
+            var volume = Number(valor);
+
+            video.volume = volume;
+            video.muted = volume === 0;
+        }
+
+        async function telaCheia() {
+            try {
+                if (!document.fullscreenElement) {
+                    if (video.requestFullscreen) {
+                        await video.requestFullscreen();
                     }
-                };
+                } else if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                }
+            } catch (err) {
+                console.error("Erro ao alternar tela cheia:", err);
+            }
+        }
 
-                var oferta = await pc.createOffer();
-                await pc.setLocalDescription(oferta);
-                socket.emit('sinal-tela', { para: idEspectador, sinal: { sdp: pc.localDescription } });
-            });
+        function criarConexao(idRemetente) {
+            var pc = new RTCPeerConnection(configIce);
 
-            socket.on('sinal-tela', async function(dados) {
-                var idRemetente = dados.de;
-                var pc = conexoesTela[idRemetente];
+            conexoesTela[idRemetente] = pc;
+            candidatosPendentes[idRemetente] = [];
 
-                if (!pc) {
-                    pc = new RTCPeerConnection(configIce);
-                    conexoesTela[idRemetente] = pc;
-                    pc.ontrack = function(e) {
-                        var streamRecebido = e.streams[0];
-                        if (streamRecebido) {
-                            var video = document.getElementById('video-tela');
-                            video.srcObject = streamRecebido;
-                            video.style.display = 'block';
-                            video.muted = false;
-                            video.volume = parseFloat(document.getElementById('slider-vol-tela').value);
-
-                            document.getElementById('aviso-tela').style.display = 'none';
-                            document.getElementById('btn-fullscreen').style.display = 'inline-block';
-                            document.getElementById('box-vol-tela').style.display = 'flex';
+            pc.onicecandidate = function(evento) {
+                if (evento.candidate && socket && socket.connected) {
+                    socket.emit("sinal-tela", {
+                        para: idRemetente,
+                        sinal: {
+                            candidate: evento.candidate
                         }
-                    };
-                    pc.onicecandidate = function(e) {
-                        if (e.candidate) {
-                            socket.emit('sinal-tela', { para: idRemetente, sinal: { candidate: e.candidate } });
-                        }
-                    };
+                    });
+                }
+            };
+
+            pc.ontrack = function(evento) {
+                if (streamTela) return;
+
+                var streamRecebido = evento.streams[0];
+
+                if (streamRecebido) {
+                    video.srcObject = streamRecebido;
+                } else {
+                    if (!video.srcObject) {
+                        video.srcObject = new MediaStream();
+                    }
+
+                    video.srcObject.addTrack(evento.track);
                 }
 
-                if (dados.sinal.sdp) {
-                    await pc.setRemoteDescription(new RTCSessionDescription(dados.sinal.sdp));
-                    if (dados.sinal.sdp.type === 'offer') {
-                        var resposta = await pc.createAnswer();
-                        await pc.setLocalDescription(resposta);
-                        socket.emit('sinal-tela', { para: idRemetente, sinal: { sdp: pc.localDescription } });
-                    }
-                } else if (dados.sinal.candidate) {
-                    await pc.addIceCandidate(new RTCIceCandidate(dados.sinal.candidate));
+                video.volume = Number(sliderVolume.value);
+                video.muted = video.volume === 0;
+
+                mostrarVideo(false);
+                reproduzirVideo();
+            };
+
+            return pc;
+        }
+
+        async function aplicarCandidatosPendentes(id, pc) {
+            var candidatos = candidatosPendentes[id] || [];
+
+            while (candidatos.length > 0) {
+                await pc.addIceCandidate(candidatos.shift());
+            }
+        }
+
+        async function processarSinal(dados) {
+            if (!dados || !dados.de || !dados.sinal) return;
+
+            var idRemetente = dados.de;
+            var sinal = dados.sinal;
+            var pc = conexoesTela[idRemetente];
+
+            if (!pc) {
+                pc = criarConexao(idRemetente);
+            }
+
+            if (sinal.sdp) {
+                await pc.setRemoteDescription(sinal.sdp);
+                await aplicarCandidatosPendentes(idRemetente, pc);
+
+                if (sinal.sdp.type === "offer") {
+                    var resposta = await pc.createAnswer();
+
+                    await pc.setLocalDescription(resposta);
+
+                    socket.emit("sinal-tela", {
+                        para: idRemetente,
+                        sinal: {
+                            sdp: pc.localDescription
+                        }
+                    });
+                }
+            } else if (sinal.candidate) {
+                if (pc.remoteDescription) {
+                    await pc.addIceCandidate(sinal.candidate);
+                } else {
+                    candidatosPendentes[idRemetente].push(
+                        sinal.candidate
+                    );
+                }
+            }
+        }
+
+        video.addEventListener("dblclick", telaCheia);
+
+        try {
+            if (typeof io !== "function") {
+                throw new Error(
+                    "Biblioteca Socket.IO não carregada. " +
+                    "Verifique /socket.io/socket.io.js no seu servidor."
+                );
+            }
+
+            socket = io();
+
+            socket.on("connect", function() {
+                console.log("Conectado ao servidor:", socket.id);
+
+                if (streamTela) {
+                    socket.emit("iniciou-tela");
+                } else {
+                    socket.emit("quero-assistir");
                 }
             });
 
+            socket.on("connect_error", function(err) {
+                console.error("Erro de conexão com o servidor:", err.message);
+            });
+
+            socket.on("disconnect", function(motivo) {
+                console.warn("Desconectado do servidor:", motivo);
+            });
+
+            socket.on("solicitar-conexao", function() {
+                if (!streamTela) {
+                    socket.emit("quero-assistir");
+                }
+            });
+
+            socket.on("pedir-tela", async function(dados) {
+                if (!streamTela || !dados || !dados.para) return;
+
+                var idEspectador = dados.para;
+
+                try {
+                    if (conexoesTela[idEspectador]) {
+                        conexoesTela[idEspectador].close();
+                    }
+
+                    var pc = criarConexao(idEspectador);
+
+                    streamTela.getTracks().forEach(function(track) {
+                        pc.addTrack(track, streamTela);
+                    });
+
+                    var oferta = await pc.createOffer();
+
+                    await pc.setLocalDescription(oferta);
+
+                    socket.emit("sinal-tela", {
+                        para: idEspectador,
+                        sinal: {
+                            sdp: pc.localDescription
+                        }
+                    });
+                } catch (err) {
+                    console.error(
+                        "Erro ao preparar transmissão para o espectador:",
+                        err
+                    );
+                }
+            });
+
+            socket.on("sinal-tela", function(dados) {
+                if (!dados || !dados.de) return;
+
+                var id = dados.de;
+                var filaAnterior = filasSinalizacao[id] || Promise.resolve();
+
+                var novaFila = filaAnterior
+                    .then(function() {
+                        return processarSinal(dados);
+                    })
+                    .catch(function(err) {
+                        console.error("Erro na sinalização WebRTC:", err);
+                    });
+
+                filasSinalizacao[id] = novaFila;
+
+                novaFila.finally(function() {
+                    if (filasSinalizacao[id] === novaFila) {
+                        delete filasSinalizacao[id];
+                    }
+                });
+            });
+
+            socket.on("parou-tela", function() {
+                if (streamTela) return;
+
+                fecharConexoes();
+                limparVideo();
+            });
+
+        } catch (err) {
+            console.error("Erro ao inicializar o Socket.IO:", err);
+        }
+    </script>
+</body>
+</html>
+```
+
+
+
+O código do servidor não foi incluído no trecho que você enviou; portanto, esta entrega corrige e completa o cliente, mas não inclui essa parte da aplicação.
