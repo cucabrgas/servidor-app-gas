@@ -52,19 +52,19 @@
         <div id="aviso-tela">APP G.A.S oficial — Nenhuma transmissão de tela ativa no momento.</div>
         <video id="video-tela" autoplay playsinline></video>
         <div id="controles">
-            <button id="btn-mic" class="btn-cinza" onclick="alternarMicrofone()">🎤 Ligar Mic</button>
-            <button id="btn-ptt" class="btn-cinza" onclick="alternarModoPTT()">📻 PTT: OFF</button>
-            <button id="btn-tecla" class="btn-cinza" style="display:none;" onclick="configurarTeclaPTT()">Tecla: [V]</button>
-            <button id="btn-compartilhar" class="btn-verde" onclick="iniciarCompartilhamento()">🖥️ Tela</button>
-            <button id="btn-parar" class="btn-vermelho" style="display:none;" onclick="pararCompartilhamento()">⏹️ Parar</button>
+            <button id="btn-mic" class="btn-cinza">🎤 Ligar Mic</button>
+            <button id="btn-ptt" class="btn-cinza" title="Segure a tecla para falar">📻 PTT: OFF</button>
+            <button id="btn-tecla" class="btn-cinza" style="display:none;">Tecla: [V]</button>
+            <button id="btn-compartilhar" class="btn-verde">🖥️ Tela</button>
+            <button id="btn-parar" class="btn-vermelho" style="display:none;">⏹️ Parar</button>
             
             <div id="box-vol-tela" class="controle-vol-tela" title="Volume do som da tela/jogo">
                 <span>🔊</span>
-                <input type="range" id="slider-vol-tela" min="0" max="1" step="0.05" value="0.8" oninput="ajustarVolumeTela(this.value)">
+                <input type="range" id="slider-vol-tela" min="0" max="1" step="0.05" value="0.8">
             </div>
 
-            <button id="btn-fullscreen" class="btn-cinza" style="display:none;" onclick="alternarTelaCheia()">⛶ Tela Cheia</button>
-            <button id="btn-link" class="btn-dourado" onclick="copiarLinkSala()">🔗 Link</button>
+            <button id="btn-fullscreen" class="btn-cinza" style="display:none;">⛶ Tela Cheia</button>
+            <button id="btn-link" class="btn-dourado">🔗 Link</button>
             <span id="status-link"></span>
         </div>
     </div>
@@ -82,7 +82,7 @@
             <div id="lista-usuarios"></div>
         </div>
         <div id="mensagens"></div>
-        <form id="form-chat" onsubmit="enviarMensagem(event)">
+        <form id="form-chat">
             <input type="text" id="input-msg" placeholder="Mensagem no rádio..." autocomplete="off">
         </form>
     </div>
@@ -104,28 +104,31 @@
             Object.entries(operadores).forEach(([id, nomeOp]) => {
                 const badge = document.createElement('div');
                 badge.className = 'operador-badge';
-                badge.id = `op-${id}`;
+                badge.id = 'op-' + id;
 
                 if (id === socket.id) {
-                    badge.innerHTML = `<span class="ponto"></span><span>${nomeOp} (Você)</span>`;
+                    badge.innerHTML = '<span class="ponto"></span><span>' + nomeOp + ' (Você)</span>';
                 } else {
                     const volAtual = volumesOperadores[id] !== undefined ? volumesOperadores[id] : 1;
-                    badge.innerHTML = `
-                        <span class="ponto"></span>
-                        <span>${nomeOp}</span>
-                        <input type="range" class="vol-op" min="0" max="1" step="0.05" value="${volAtual}" 
-                               title="Volume de ${nomeOp}" oninput="ajustarVolumeOperador('${id}', this.value)">
-                    `;
+                    badge.innerHTML = '<span class="ponto"></span><span>' + nomeOp + '</span>';
+                    const slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.className = 'vol-op';
+                    slider.min = '0';
+                    slider.max = '1';
+                    slider.step = '0.05';
+                    slider.value = volAtual;
+                    slider.title = 'Volume de ' + nomeOp;
+                    slider.addEventListener('input', () => {
+                        volumesOperadores[id] = parseFloat(slider.value);
+                        const audioEl = document.getElementById('audio-' + id);
+                        if (audioEl) audioEl.volume = volumesOperadores[id];
+                    });
+                    badge.appendChild(slider);
                 }
                 lista.appendChild(badge);
             });
         });
-
-        function ajustarVolumeOperador(idAmigo, valor) {
-            volumesOperadores[idAmigo] = parseFloat(valor);
-            const audioEl = document.getElementById(`audio-${idAmigo}`);
-            if (audioEl) audioEl.volume = volumesOperadores[idAmigo];
-        }
 
         let audioCtx = null;
         function monitorarVolume(stream, idOperador) {
@@ -147,7 +150,7 @@
                     analyser.getByteFrequencyData(dataArray);
                     let soma = 0;
                     for (let i = 0; i < dataArray.length; i++) soma += dataArray[i];
-                    const badge = document.getElementById(`op-${idOperador}`);
+                    const badge = document.getElementById('op-' + idOperador);
                     if (badge) badge.classList.toggle('falando', (soma / dataArray.length) > 14);
                 }, 120);
             } catch (e) {}
@@ -172,8 +175,9 @@
             }
         }
 
-        async function alternarMicrofone() {
-            try {
-                await inicializarMicrofone();
-                if (modoPTT) {
-                    modoPTT = false;
+        function atualizarEstadoAudio(transmitindo) {
+            if (streamMic) {
+                streamMic.getAudioTracks().forEach(track => track.enabled = transmitindo);
+            }
+            const btnMic = document.getElementById('btn-mic');
+
