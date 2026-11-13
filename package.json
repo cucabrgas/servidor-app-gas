@@ -2,13 +2,15 @@
   "name": "app-gas-oficial",
   "version": "1.0.0",
   "private": true,
-  "description": "APP G.A.S oficial com transmissoes, chat e participantes",
+  "description": "APP G.A.S oficial com transmissoes, chat e imagens",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.21.2",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "multer": "^2.4.0",
+    "sharp": "^0.34.0"
   }
 }
