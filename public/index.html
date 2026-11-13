@@ -71,7 +71,7 @@
 
     <div id="chat-container">
         <div id="cabecalho-chat">
-            <img src="brasao.png" alt="Brasão G.A.S">
+            <img src="brasao.png" alt="Brasão G.A.S" onerror="this.style.display='none'">
             <div>
                 <h3>APP G.A.S OFICIAL</h3>
                 <span>Grupo de Assalto • Rádio Tático</span>
@@ -89,7 +89,7 @@
 
     <div id="audios-remotos"></div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://socket.io"></script>
     <script>
         const socket = io();
         const nome = prompt("APP G.A.S oficial — Digite seu nome de operador:") || "Operador";
@@ -124,9 +124,7 @@
         function ajustarVolumeOperador(idAmigo, valor) {
             volumesOperadores[idAmigo] = parseFloat(valor);
             const audioEl = document.getElementById(`audio-${idAmigo}`);
-            if (audioEl) {
-                audioEl.volume = volumesOperadores[idAmigo];
-            }
+            if (audioEl) audioEl.volume = volumesOperadores[idAmigo];
         }
 
         let audioCtx = null;
@@ -150,13 +148,12 @@
                     let soma = 0;
                     for (let i = 0; i < dataArray.length; i++) soma += dataArray[i];
                     const badge = document.getElementById(`op-${idOperador}`);
-                    if (badge) {
-                        badge.classList.toggle('falando', (soma / dataArray.length) > 14);
-                    }
+                    if (badge) badge.classList.toggle('falando', (soma / dataArray.length) > 14);
                 }, 120);
             } catch (e) {}
         }
 
+        // --- VOZ E PUSH-TO-TALK ---
         let streamMic = null;
         let micAtivo = false;
         let modoPTT = false;
@@ -167,10 +164,7 @@
 
         async function inicializarMicrofone() {
             if (!streamMic) {
-                streamMic = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: false
-                });
+                streamMic = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 monitorarVolume(streamMic, socket.id);
                 Object.values(conexoesVoz).forEach(pc => {
                     streamMic.getTracks().forEach(track => pc.addTrack(track, streamMic));
@@ -182,3 +176,4 @@
             try {
                 await inicializarMicrofone();
                 if (modoPTT) {
+                    modoPTT = false;
