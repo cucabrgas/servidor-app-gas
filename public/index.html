@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
@@ -10,7 +11,9 @@
     <title>APP G.A.S oficial</title>
 
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         :root {
             color-scheme: dark;
@@ -24,12 +27,32 @@
         body {
             margin: 0;
             min-height: 100vh;
+            position: relative;
+            isolation: isolate;
             background: var(--fundo);
             color: #fff;
             font-family: "Segoe UI", sans-serif;
         }
 
-        button, input, select { font: inherit; }
+        /* Logo no fundo, sem interferir nos cliques. */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: url("/logo-gas.png");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: min(65vw, 650px);
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
 
         button {
             padding: 9px 13px;
@@ -40,18 +63,39 @@
             font-weight: 600;
         }
 
-        button:hover { filter: brightness(1.1); }
-        button:disabled, select:disabled {
-            opacity: .45;
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        button:disabled,
+        select:disabled {
+            opacity: 0.45;
             cursor: not-allowed;
         }
 
-        [hidden] { display: none !important; }
+        [hidden] {
+            display: none !important;
+        }
 
-        .verde { background: #238b4e; color: #fff; }
-        .vermelho { background: #c4383c; color: #fff; }
-        .dourado { background: var(--dourado); color: #151815; }
-        .cinza { background: #363f36; color: #fff; }
+        .verde {
+            background: #238b4e;
+            color: #fff;
+        }
+
+        .vermelho {
+            background: #c4383c;
+            color: #fff;
+        }
+
+        .dourado {
+            background: var(--dourado);
+            color: #151815;
+        }
+
+        .cinza {
+            background: #363f36;
+            color: #fff;
+        }
 
         header {
             padding: 14px 18px;
@@ -116,13 +160,19 @@
             align-items: start;
         }
 
-        #layout.sem-lateral { grid-template-columns: 1fr; }
-        #area-telas { min-width: 0; }
+        #layout.sem-lateral {
+            grid-template-columns: 1fr;
+        }
+
+        #area-telas {
+            min-width: 0;
+        }
 
         #aviso {
             text-align: center;
             padding: 70px 15px;
             color: var(--texto);
+            background: rgba(14, 16, 14, 0.35);
             border: 1px dashed var(--borda);
             border-radius: 10px;
         }
@@ -134,7 +184,9 @@
             gap: 14px;
         }
 
-        #destaque:not(:empty) { margin-bottom: 15px; }
+        #destaque:not(:empty) {
+            margin-bottom: 15px;
+        }
 
         .tela {
             min-width: 0;
@@ -144,7 +196,9 @@
             background: var(--painel);
         }
 
-        #destaque .tela { border-color: var(--dourado); }
+        #destaque .tela {
+            border-color: var(--dourado);
+        }
 
         .tela-topo {
             padding: 8px 11px;
@@ -277,7 +331,10 @@
             font-weight: 600;
         }
 
-        .horario { color: #859185; font-size: 10px; }
+        .horario {
+            color: #859185;
+            font-size: 10px;
+        }
 
         .mensagem-texto {
             font-size: 13px;
@@ -299,7 +356,10 @@
             border-top: 1px solid var(--borda);
         }
 
-        #texto-chat { min-width: 0; flex: 1; }
+        #texto-chat {
+            min-width: 0;
+            flex: 1;
+        }
 
         input[type="text"] {
             background: #0e100e;
@@ -336,7 +396,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background: rgba(0, 0, 0, .94);
+            background: rgba(0, 0, 0, 0.94);
         }
 
         #form-entrada {
@@ -353,9 +413,19 @@
             color: var(--dourado);
         }
 
-        #form-entrada p { color: var(--texto); font-size: 14px; }
-        #nickname { width: 100%; margin: 9px 0 15px; }
-        #form-entrada button { width: 100%; }
+        #form-entrada p {
+            color: var(--texto);
+            font-size: 14px;
+        }
+
+        #nickname {
+            width: 100%;
+            margin: 9px 0 15px;
+        }
+
+        #form-entrada button {
+            width: 100%;
+        }
 
         #erro-entrada {
             margin-top: 12px;
@@ -398,7 +468,10 @@
             overflow-wrap: anywhere;
         }
 
-        .acoes-imagem { display: flex; gap: 8px; }
+        .acoes-imagem {
+            display: flex;
+            gap: 8px;
+        }
 
         .imagem-chat {
             display: block;
@@ -423,7 +496,7 @@
         }
 
         #visualizador-imagem::backdrop {
-            background: rgba(0, 0, 0, .9);
+            background: rgba(0, 0, 0, 0.9);
         }
 
         #imagem-ampliada {
@@ -435,11 +508,24 @@
         }
 
         @media (max-width: 850px) {
-            #layout { grid-template-columns: 1fr; }
-            #lateral { position: static; }
-            #mensagens { height: 300px; }
+            body::before {
+                background-size: 85vw;
+            }
 
-            header, #barra {
+            #layout {
+                grid-template-columns: 1fr;
+            }
+
+            #lateral {
+                position: static;
+            }
+
+            #mensagens {
+                height: 300px;
+            }
+
+            header,
+            #barra {
                 padding-left: 12px;
                 padding-right: 12px;
             }
@@ -449,7 +535,9 @@
                 padding-right: 12px;
             }
 
-            h1 { font-size: 15px; }
+            h1 {
+                font-size: 15px;
+            }
         }
     </style>
 </head>
@@ -461,6 +549,7 @@
             <p>Escolha seu nickname para entrar.</p>
 
             <label for="nickname">Nickname</label>
+
             <input
                 type="text"
                 id="nickname"
@@ -470,7 +559,10 @@
                 required
             >
 
-            <button type="submit" class="dourado">Entrar</button>
+            <button type="submit" class="dourado">
+                Entrar
+            </button>
+
             <div id="erro-entrada" role="alert"></div>
         </form>
     </div>
@@ -483,6 +575,7 @@
     <div id="barra">
         <label class="opcao-captura">
             Resolução
+
             <select id="resolucao-captura">
                 <option value="original">Original</option>
                 <option value="854x480">480p</option>
@@ -495,6 +588,7 @@
 
         <label class="opcao-captura">
             FPS
+
             <select id="fps-captura">
                 <option value="15">15 FPS</option>
                 <option value="24">24 FPS</option>
@@ -511,8 +605,13 @@
             Parar minha tela
         </button>
 
-        <button id="copiar" class="dourado">Copiar Link</button>
-        <button id="abrir-chat" class="cinza">Chat</button>
+        <button id="copiar" class="dourado">
+            Copiar Link
+        </button>
+
+        <button id="abrir-chat" class="cinza">
+            Chat
+        </button>
 
         <button id="abrir-pessoas" class="cinza">
             Participantes — 0
@@ -529,15 +628,23 @@
 
     <div id="layout">
         <main id="area-telas">
-            <div id="aviso">Nenhuma transmissão ativa.</div>
+            <div id="aviso">
+                Nenhuma transmissão ativa.
+            </div>
+
             <div id="destaque"></div>
             <div id="grade"></div>
         </main>
 
         <aside id="lateral">
             <div id="abas">
-                <button id="aba-chat" class="dourado">Chat</button>
-                <button id="aba-pessoas" class="cinza">Participantes</button>
+                <button id="aba-chat" class="dourado">
+                    Chat
+                </button>
+
+                <button id="aba-pessoas" class="cinza">
+                    Participantes
+                </button>
 
                 <button
                     id="fechar-lateral"
@@ -613,7 +720,11 @@
                         required
                     >
 
-                    <button id="enviar-chat" class="verde" disabled>
+                    <button
+                        id="enviar-chat"
+                        class="verde"
+                        disabled
+                    >
                         Enviar
                     </button>
                 </form>
@@ -626,11 +737,18 @@
     </div>
 
     <dialog id="visualizador-imagem">
-        <button type="button" id="fechar-imagem" class="cinza">
+        <button
+            type="button"
+            id="fechar-imagem"
+            class="cinza"
+        >
             Fechar
         </button>
 
-        <img id="imagem-ampliada" alt="Imagem ampliada do chat">
+        <img
+            id="imagem-ampliada"
+            alt="Imagem ampliada do chat"
+        >
     </dialog>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -672,7 +790,9 @@
         }
 
         function atualizarBotoes() {
-            $("compartilhar").disabled = !registrado || capturando;
+            $("compartilhar").disabled =
+                !registrado || capturando;
+
             $("compartilhar").hidden = Boolean(streamLocal);
             $("parar").hidden = !streamLocal;
 
@@ -687,7 +807,9 @@
 
             $("cancelar-imagem").disabled = enviandoImagem;
 
-            const bloquear = capturando || Boolean(streamLocal);
+            const bloquear =
+                capturando || Boolean(streamLocal);
+
             $("resolucao-captura").disabled = bloquear;
             $("fps-captura").disabled = bloquear;
         }
@@ -711,14 +833,23 @@
             }
 
             for (const [id, card] of cards) {
-                card.video.muted = id === "local"
-                    ? true
-                    : card.video.volume === 0 ||
-                      Boolean(selecionado && selecionado !== card.video);
+                if (id === "local") {
+                    card.video.muted = true;
+                } else {
+                    card.video.muted =
+                        card.video.volume === 0 ||
+                        Boolean(
+                            selecionado &&
+                            selecionado !== card.video
+                        );
+                }
+
+                const estaFullscreen =
+                    fullscreen === card.elemento ||
+                    fullscreen === card.video;
 
                 card.botaoFullscreen.textContent =
-                    fullscreen === card.elemento ||
-                    fullscreen === card.video
+                    estaFullscreen
                         ? "Sair da tela cheia"
                         : "Tela cheia";
             }
@@ -737,6 +868,7 @@
 
         function abrirPainel(aba) {
             abaAtual = aba;
+
             $("lateral").hidden = false;
             $("layout").classList.remove("sem-lateral");
 
@@ -752,32 +884,46 @@
             if (aba === "chat") {
                 naoLidas = 0;
                 atualizarContadorChat();
-                $("mensagens").scrollTop = $("mensagens").scrollHeight;
+
+                $("mensagens").scrollTop =
+                    $("mensagens").scrollHeight;
             }
         }
 
         function adicionarImagemNaMensagem(item, dados) {
-            if (dados.tipo !== "imagem" || !dados.imagem?.url) return;
+            if (
+                dados.tipo !== "imagem" ||
+                !dados.imagem?.url
+            ) {
+                return;
+            }
 
             let url;
 
             try {
-                url = new URL(dados.imagem.url, location.origin);
+                url = new URL(
+                    dados.imagem.url,
+                    location.origin
+                );
             } catch {
                 return;
             }
 
             if (
                 url.origin !== location.origin ||
-                !/^\/api\/imagens\/[a-f0-9-]+$/i.test(url.pathname)
+                !/^\/api\/imagens\/[a-f0-9-]+$/i.test(
+                    url.pathname
+                )
             ) {
                 return;
             }
 
             const imagem = document.createElement("img");
+
             imagem.className = "imagem-chat";
             imagem.src = url.href;
-            imagem.alt = `Imagem enviada por ${dados.nickname}`;
+            imagem.alt =
+                `Imagem enviada por ${dados.nickname}`;
             imagem.loading = "lazy";
 
             imagem.onclick = () => {
@@ -789,20 +935,28 @@
             };
 
             imagem.onload = () => {
-                $("mensagens").scrollTop = $("mensagens").scrollHeight;
+                $("mensagens").scrollTop =
+                    $("mensagens").scrollHeight;
             };
 
             imagem.onerror = () => {
                 const aviso = document.createElement("div");
+
                 aviso.className = "aviso-chat";
-                aviso.textContent = "Imagem expirada ou indisponível.";
+                aviso.textContent =
+                    "Imagem expirada ou indisponível.";
+
                 imagem.replaceWith(aviso);
             };
 
             item.append(imagem);
         }
 
-        function adicionarMensagem(dados, sistema = false, contar = true) {
+        function adicionarMensagem(
+            dados,
+            sistema = false,
+            contar = true
+        ) {
             const item = document.createElement("div");
 
             if (sistema) {
@@ -820,11 +974,15 @@
 
                 const horario = document.createElement("span");
                 horario.className = "horario";
-                horario.textContent = new Date(dados.horario)
-                    .toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                    });
+
+                horario.textContent =
+                    new Date(dados.horario).toLocaleTimeString(
+                        "pt-BR",
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    );
 
                 const texto = document.createElement("div");
                 texto.className = "mensagem-texto";
@@ -842,12 +1000,16 @@
                 $("mensagens").firstElementChild.remove();
             }
 
-            $("mensagens").scrollTop = $("mensagens").scrollHeight;
+            $("mensagens").scrollTop =
+                $("mensagens").scrollHeight;
 
             if (
                 contar &&
                 !sistema &&
-                ($("lateral").hidden || abaAtual !== "chat") &&
+                (
+                    $("lateral").hidden ||
+                    abaAtual !== "chat"
+                ) &&
                 dados.de !== socket?.id
             ) {
                 naoLidas++;
@@ -870,7 +1032,11 @@
                 const nome = document.createElement("div");
                 nome.textContent =
                     pessoa.nickname +
-                    (pessoa.id === socket.id ? " (você)" : "");
+                    (
+                        pessoa.id === socket.id
+                            ? " (você)"
+                            : ""
+                    );
 
                 const estado = document.createElement("small");
                 estado.textContent = pessoa.compartilhando
@@ -883,10 +1049,15 @@
         }
 
         function voltarGrade() {
-            if (destaqueId && cards.has(destaqueId)) {
+            if (
+                destaqueId &&
+                cards.has(destaqueId)
+            ) {
                 const card = cards.get(destaqueId);
+
                 $("grade").append(card.elemento);
                 card.botaoDestaque.textContent = "Destacar";
+
                 tocar(card);
             }
 
@@ -906,9 +1077,13 @@
             if (!card) return;
 
             destaqueId = id;
-            card.botaoDestaque.textContent = "Voltar à grade";
+
+            card.botaoDestaque.textContent =
+                "Voltar à grade";
+
             $("destaque").append(card.elemento);
             $("voltar-grade").hidden = false;
+
             tocar(card);
         }
 
@@ -943,7 +1118,8 @@
 
             const estatisticas = document.createElement("div");
             estatisticas.className = "estatisticas-video";
-            estatisticas.textContent = "Aguardando dados do vídeo...";
+            estatisticas.textContent =
+                "Aguardando dados do vídeo...";
 
             const controles = document.createElement("div");
             controles.className = "tela-controles";
@@ -953,27 +1129,38 @@
             reproduzir.textContent = "Reproduzir";
             reproduzir.hidden = true;
 
-            const botaoDestaque = document.createElement("button");
+            const botaoDestaque =
+                document.createElement("button");
+
             botaoDestaque.className = "dourado";
             botaoDestaque.textContent = "Destacar";
             botaoDestaque.onclick = () => destacar(id);
 
-            const botaoFullscreen = document.createElement("button");
+            const botaoFullscreen =
+                document.createElement("button");
+
             botaoFullscreen.className = "cinza";
             botaoFullscreen.textContent = "Tela cheia";
 
             botaoFullscreen.onclick = async () => {
                 try {
-                    if (document.fullscreenElement === elemento) {
+                    if (
+                        document.fullscreenElement === elemento
+                    ) {
                         await document.exitFullscreen();
                     } else if (elemento.requestFullscreen) {
                         await elemento.requestFullscreen();
                     } else {
-                        status("Tela cheia indisponível neste navegador.");
+                        status(
+                            "Tela cheia indisponível neste navegador."
+                        );
                     }
                 } catch (erro) {
                     console.error(erro);
-                    status("Não foi possível alternar a tela cheia.");
+
+                    status(
+                        "Não foi possível alternar a tela cheia."
+                    );
                 }
             };
 
@@ -995,7 +1182,11 @@
                 volume.max = "1";
                 volume.step = "0.05";
                 volume.value = "0.8";
-                volume.setAttribute("aria-label", `Volume de ${nome}`);
+
+                volume.setAttribute(
+                    "aria-label",
+                    `Volume de ${nome}`
+                );
 
                 volume.oninput = () => {
                     video.volume = Number(volume.value);
@@ -1006,7 +1197,13 @@
                 controles.append(label);
             }
 
-            elemento.append(topo, video, estatisticas, controles);
+            elemento.append(
+                topo,
+                video,
+                estatisticas,
+                controles
+            );
+
             $("grade").append(elemento);
 
             const card = {
@@ -1043,7 +1240,9 @@
             const card = cards.get(id);
             if (!card) return;
 
-            if (document.fullscreenElement === card.elemento) {
+            if (
+                document.fullscreenElement === card.elemento
+            ) {
                 document.exitFullscreen().catch(console.debug);
             }
 
@@ -1068,6 +1267,7 @@
             entrada.pc.ontrack = null;
             entrada.pc.onicecandidate = null;
             entrada.pc.close();
+
             mapa.delete(id);
         }
 
@@ -1085,7 +1285,12 @@
         }
 
         function emitirSinal(destino, transmissor, sinal) {
-            if (!registrado || !socket?.connected) return;
+            if (
+                !registrado ||
+                !socket?.connected
+            ) {
+                return;
+            }
 
             socket.emit("sinal-tela", {
                 para: destino,
@@ -1094,7 +1299,12 @@
             });
         }
 
-        function criarConexao(mapa, id, destino, transmissor) {
+        function criarConexao(
+            mapa,
+            id,
+            destino,
+            transmissor
+        ) {
             const entrada = {
                 pc: new RTCPeerConnection(configIce),
                 candidatos: [],
@@ -1108,9 +1318,13 @@
                     evento.candidate &&
                     mapa.get(id) === entrada
                 ) {
-                    emitirSinal(destino, transmissor, {
-                        candidate: evento.candidate
-                    });
+                    emitirSinal(
+                        destino,
+                        transmissor,
+                        {
+                            candidate: evento.candidate
+                        }
+                    );
                 }
             };
 
@@ -1118,7 +1332,13 @@
         }
 
         async function iniciarTela() {
-            if (!registrado || streamLocal || capturando) return;
+            if (
+                !registrado ||
+                streamLocal ||
+                capturando
+            ) {
+                return;
+            }
 
             if (!navigator.mediaDevices?.getDisplayMedia) {
                 status(
@@ -1128,11 +1348,17 @@
                 return;
             }
 
-            const resolucao = $("resolucao-captura").value;
-            const fps = Number($("fps-captura").value);
+            const resolucao =
+                $("resolucao-captura").value;
+
+            const fps =
+                Number($("fps-captura").value);
 
             const configuracaoVideo = {
-                frameRate: { ideal: fps, max: fps }
+                frameRate: {
+                    ideal: fps,
+                    max: fps
+                }
             };
 
             if (resolucao !== "original") {
@@ -1161,36 +1387,57 @@
                         audio: true
                     });
 
-                if (!registrado || !socket?.connected) {
-                    stream.getTracks().forEach((track) => track.stop());
-                    status("Reconecte-se antes de compartilhar.");
+                if (
+                    !registrado ||
+                    !socket?.connected
+                ) {
+                    stream.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+
+                    status(
+                        "Reconecte-se antes de compartilhar."
+                    );
                     return;
                 }
 
                 streamLocal = stream;
 
-                const card = criarCard("local", nickname, true);
+                const card = criarCard(
+                    "local",
+                    nickname,
+                    true
+                );
+
                 card.video.srcObject = streamLocal;
                 tocar(card);
 
-                const faixa = streamLocal.getVideoTracks()[0];
-                if (faixa) faixa.onended = pararTela;
+                const faixa =
+                    streamLocal.getVideoTracks()[0];
+
+                if (faixa) {
+                    faixa.onended = pararTela;
+                }
 
                 socket.emit("iniciou-tela");
 
-                const config = faixa?.getSettings() || {};
+                const config =
+                    faixa?.getSettings() || {};
 
-                const resolucaoAtual = config.width && config.height
-                    ? `${config.width} × ${config.height}`
-                    : "resolução não informada";
+                const resolucaoAtual =
+                    config.width && config.height
+                        ? `${config.width} × ${config.height}`
+                        : "resolução não informada";
 
-                const fpsAtual = Number.isFinite(config.frameRate)
-                    ? `${config.frameRate.toFixed(0)} FPS`
-                    : "FPS não informado";
+                const fpsAtual =
+                    Number.isFinite(config.frameRate)
+                        ? `${config.frameRate.toFixed(0)} FPS`
+                        : "FPS não informado";
 
-                const audio = streamLocal.getAudioTracks().length
-                    ? "com faixa de áudio"
-                    : "sem faixa de áudio";
+                const audio =
+                    streamLocal.getAudioTracks().length
+                        ? "com faixa de áudio"
+                        : "sem faixa de áudio";
 
                 status(
                     `Captura configurada: ${resolucaoAtual} · ` +
@@ -1203,14 +1450,21 @@
                     erro.name === "NotAllowedError" ||
                     erro.name === "AbortError"
                 ) {
-                    status("Compartilhamento cancelado ou não autorizado.");
-                } else if (erro.name === "OverconstrainedError") {
+                    status(
+                        "Compartilhamento cancelado " +
+                        "ou não autorizado."
+                    );
+                } else if (
+                    erro.name === "OverconstrainedError"
+                ) {
                     status(
                         "Configuração indisponível. " +
                         "Tente uma resolução menor ou menos FPS."
                     );
                 } else {
-                    status("Erro ao capturar: " + erro.message);
+                    status(
+                        "Erro ao capturar: " + erro.message
+                    );
                 }
             } finally {
                 capturando = false;
@@ -1234,18 +1488,30 @@
 
             removerCard("local");
 
-            if (registrado && socket?.connected) {
+            if (
+                registrado &&
+                socket?.connected
+            ) {
                 socket.emit("parou-tela");
             }
 
             atualizarBotoes();
-            status("Sua transmissão foi encerrada.");
+
+            status(
+                "Sua transmissão foi encerrada."
+            );
         }
 
         async function enviarTela(dados) {
-            if (!streamLocal || !dados?.para) return;
+            if (
+                !streamLocal ||
+                !dados?.para
+            ) {
+                return;
+            }
 
             const espectador = dados.para;
+
             if (envios.has(espectador)) return;
 
             const meuId = socket.id;
@@ -1259,49 +1525,100 @@
 
             try {
                 streamLocal.getTracks().forEach((track) => {
-                    entrada.pc.addTrack(track, streamLocal);
+                    entrada.pc.addTrack(
+                        track,
+                        streamLocal
+                    );
                 });
 
-                const oferta = await entrada.pc.createOffer();
-                await entrada.pc.setLocalDescription(oferta);
+                const oferta =
+                    await entrada.pc.createOffer();
 
-                if (envios.get(espectador) !== entrada) return;
+                await entrada.pc.setLocalDescription(
+                    oferta
+                );
 
-                emitirSinal(espectador, meuId, {
-                    sdp: entrada.pc.localDescription
-                });
+                if (
+                    envios.get(espectador) !== entrada
+                ) {
+                    return;
+                }
+
+                emitirSinal(
+                    espectador,
+                    meuId,
+                    {
+                        sdp: entrada.pc.localDescription
+                    }
+                );
             } catch (erro) {
-                console.error("Erro ao enviar tela:", erro);
+                console.error(
+                    "Erro ao enviar tela:",
+                    erro
+                );
 
-                if (envios.get(espectador) === entrada) {
-                    fecharEntrada(envios, espectador);
+                if (
+                    envios.get(espectador) === entrada
+                ) {
+                    fecharEntrada(
+                        envios,
+                        espectador
+                    );
                 }
             }
         }
 
         async function processarSinal(dados) {
-            if (!registrado || !dados?.sinal) return;
+            if (
+                !registrado ||
+                !dados?.sinal
+            ) {
+                return;
+            }
 
-            const souTransmissor = dados.transmissor === socket.id;
-            const mapa = souTransmissor ? envios : recebimentos;
-            const id = souTransmissor ? dados.de : dados.transmissor;
+            const souTransmissor =
+                dados.transmissor === socket.id;
 
-            if (!souTransmissor && dados.de !== id) return;
+            const mapa = souTransmissor
+                ? envios
+                : recebimentos;
+
+            const id = souTransmissor
+                ? dados.de
+                : dados.transmissor;
+
+            if (
+                !souTransmissor &&
+                dados.de !== id
+            ) {
+                return;
+            }
 
             let entrada = mapa.get(id);
 
             if (!entrada) {
                 if (souTransmissor) return;
 
-                entrada = criarConexao(recebimentos, id, id, id);
+                entrada = criarConexao(
+                    recebimentos,
+                    id,
+                    id,
+                    id
+                );
 
                 nomes.set(
                     id,
-                    dados.nickname || nomes.get(id) || "Participante"
+                    dados.nickname ||
+                    nomes.get(id) ||
+                    "Participante"
                 );
 
                 entrada.pc.ontrack = (evento) => {
-                    if (recebimentos.get(id) !== entrada) return;
+                    if (
+                        recebimentos.get(id) !== entrada
+                    ) {
+                        return;
+                    }
 
                     const card = criarCard(
                         id,
@@ -1309,10 +1626,15 @@
                     );
 
                     if (evento.streams[0]) {
-                        card.video.srcObject = evento.streams[0];
+                        card.video.srcObject =
+                            evento.streams[0];
                     } else {
-                        entrada.stream.addTrack(evento.track);
-                        card.video.srcObject = entrada.stream;
+                        entrada.stream.addTrack(
+                            evento.track
+                        );
+
+                        card.video.srcObject =
+                            entrada.stream;
                     }
 
                     tocar(card);
@@ -1323,8 +1645,15 @@
             const sinal = dados.sinal;
 
             if (sinal.sdp) {
-                await pc.setRemoteDescription(sinal.sdp);
-                if (mapa.get(id) !== entrada) return;
+                await pc.setRemoteDescription(
+                    sinal.sdp
+                );
+
+                if (
+                    mapa.get(id) !== entrada
+                ) {
+                    return;
+                }
 
                 while (entrada.candidatos.length) {
                     await pc.addIceCandidate(
@@ -1333,51 +1662,81 @@
                 }
 
                 if (sinal.sdp.type === "offer") {
-                    const resposta = await pc.createAnswer();
-                    await pc.setLocalDescription(resposta);
-                    if (mapa.get(id) !== entrada) return;
+                    const resposta =
+                        await pc.createAnswer();
 
-                    emitirSinal(dados.de, dados.transmissor, {
-                        sdp: pc.localDescription
-                    });
+                    await pc.setLocalDescription(
+                        resposta
+                    );
+
+                    if (
+                        mapa.get(id) !== entrada
+                    ) {
+                        return;
+                    }
+
+                    emitirSinal(
+                        dados.de,
+                        dados.transmissor,
+                        {
+                            sdp: pc.localDescription
+                        }
+                    );
                 }
             } else if (sinal.candidate) {
                 if (pc.remoteDescription) {
-                    await pc.addIceCandidate(sinal.candidate);
+                    await pc.addIceCandidate(
+                        sinal.candidate
+                    );
                 } else {
-                    entrada.candidatos.push(sinal.candidate);
+                    entrada.candidatos.push(
+                        sinal.candidate
+                    );
                 }
             }
         }
 
-        function formatarEstatisticas(largura, altura, fps, prefixo) {
-            const resolucao = largura > 0 && altura > 0
-                ? `${largura} × ${altura}`
-                : "Resolução indisponível";
+        function formatarEstatisticas(
+            largura,
+            altura,
+            fps,
+            prefixo
+        ) {
+            const resolucao =
+                largura > 0 && altura > 0
+                    ? `${largura} × ${altura}`
+                    : "Resolução indisponível";
 
-            const taxa = Number.isFinite(fps)
-                ? `${Math.max(0, fps).toFixed(0)} FPS`
-                : "FPS indisponível";
+            const taxa =
+                Number.isFinite(fps)
+                    ? `${Math.max(0, fps).toFixed(0)} FPS`
+                    : "FPS indisponível";
 
             return `${prefixo}: ${resolucao} · ${taxa}`;
         }
 
         async function atualizarEstatisticas() {
             if (atualizandoEstatisticas) return;
+
             atualizandoEstatisticas = true;
 
             try {
                 for (const [id, card] of cards) {
                     if (id === "local") {
-                        const faixa = streamLocal?.getVideoTracks()[0];
+                        const faixa =
+                            streamLocal?.getVideoTracks()[0];
+
                         if (!faixa) continue;
 
-                        const config = faixa.getSettings();
+                        const config =
+                            faixa.getSettings();
 
                         card.estatisticas.textContent =
                             formatarEstatisticas(
-                                config.width || card.video.videoWidth,
-                                config.height || card.video.videoHeight,
+                                config.width ||
+                                    card.video.videoWidth,
+                                config.height ||
+                                    card.video.videoHeight,
                                 config.frameRate,
                                 "Captura (config.)"
                             );
@@ -1385,12 +1744,20 @@
                         continue;
                     }
 
-                    const entrada = recebimentos.get(id);
+                    const entrada =
+                        recebimentos.get(id);
+
                     if (!entrada) continue;
-                    if (entrada.pc.connectionState === "closed") continue;
+
+                    if (
+                        entrada.pc.connectionState === "closed"
+                    ) {
+                        continue;
+                    }
 
                     try {
-                        const relatorio = await entrada.pc.getStats();
+                        const relatorio =
+                            await entrada.pc.getStats();
 
                         if (
                             cards.get(id) !== card ||
@@ -1401,7 +1768,9 @@
 
                         let dados = null;
 
-                        for (const item of relatorio.values()) {
+                        for (
+                            const item of relatorio.values()
+                        ) {
                             if (
                                 item.type === "inbound-rtp" &&
                                 (
@@ -1417,21 +1786,32 @@
                         if (!dados) continue;
 
                         let fps = dados.framesPerSecond;
-                        const anterior = card.amostraFps;
+
+                        const anterior =
+                            card.amostraFps;
 
                         if (
                             !Number.isFinite(fps) &&
-                            Number.isFinite(dados.framesDecoded) &&
+                            Number.isFinite(
+                                dados.framesDecoded
+                            ) &&
                             anterior &&
                             anterior.id === dados.id
                         ) {
                             const segundos =
-                                (dados.timestamp - anterior.timestamp) / 1000;
+                                (
+                                    dados.timestamp -
+                                    anterior.timestamp
+                                ) / 1000;
 
                             const quadros =
-                                dados.framesDecoded - anterior.frames;
+                                dados.framesDecoded -
+                                anterior.frames;
 
-                            if (segundos > 0 && quadros >= 0) {
+                            if (
+                                segundos > 0 &&
+                                quadros >= 0
+                            ) {
                                 fps = quadros / segundos;
                             }
                         }
@@ -1444,13 +1824,18 @@
 
                         card.estatisticas.textContent =
                             formatarEstatisticas(
-                                dados.frameWidth || card.video.videoWidth,
-                                dados.frameHeight || card.video.videoHeight,
+                                dados.frameWidth ||
+                                    card.video.videoWidth,
+                                dados.frameHeight ||
+                                    card.video.videoHeight,
                                 fps,
                                 "Recebido"
                             );
                     } catch (erro) {
-                        console.debug("Estatísticas indisponíveis:", erro);
+                        console.debug(
+                            "Estatísticas indisponíveis:",
+                            erro
+                        );
                     }
                 }
             } finally {
@@ -1459,42 +1844,65 @@
         }
 
         function registrar() {
-            if (!nickname || !socket?.connected) return;
+            if (
+                !nickname ||
+                !socket?.connected
+            ) {
+                return;
+            }
 
-            socket.emit("registrar", { nickname }, (resposta) => {
-                if (!resposta?.ok) {
-                    registrado = false;
-                    $("entrada").hidden = false;
+            socket.emit(
+                "registrar",
+                { nickname },
+                (resposta) => {
+                    if (!resposta?.ok) {
+                        registrado = false;
 
-                    $("erro-entrada").textContent =
-                        resposta?.erro || "Erro ao entrar.";
+                        $("entrada").hidden = false;
+
+                        $("erro-entrada").textContent =
+                            resposta?.erro ||
+                            "Erro ao entrar.";
+
+                        atualizarBotoes();
+                        return;
+                    }
+
+                    registrado = true;
+                    nickname = resposta.nickname;
+
+                    $("entrada").hidden = true;
+                    $("erro-entrada").textContent = "";
+
+                    $("identidade").textContent =
+                        "Você: " + nickname;
+
+                    const local =
+                        cards.get("local");
+
+                    if (local) {
+                        local.nome.textContent =
+                            nickname;
+                    }
 
                     atualizarBotoes();
-                    return;
+                    status("Conectado à sala.");
+
+                    if (streamLocal) {
+                        socket.emit("iniciou-tela");
+                    }
+
+                    socket.emit("quero-assistir");
                 }
-
-                registrado = true;
-                nickname = resposta.nickname;
-
-                $("entrada").hidden = true;
-                $("erro-entrada").textContent = "";
-                $("identidade").textContent = "Você: " + nickname;
-
-                const local = cards.get("local");
-                if (local) local.nome.textContent = nickname;
-
-                atualizarBotoes();
-                status("Conectado à sala.");
-
-                if (streamLocal) socket.emit("iniciou-tela");
-                socket.emit("quero-assistir");
-            });
+            );
         }
 
         function conectar() {
             if (typeof io !== "function") {
                 $("erro-entrada").textContent =
-                    "Socket.IO não carregou. Abra a página pelo servidor.";
+                    "Socket.IO não carregou. " +
+                    "Abra a página pelo servidor.";
+
                 return;
             }
 
@@ -1513,35 +1921,61 @@
                 atualizarBotoes();
 
                 $("lista-pessoas").replaceChildren();
-                $("abrir-pessoas").textContent = "Participantes — 0";
 
-                status("Desconectado. Tentando reconectar...");
+                $("abrir-pessoas").textContent =
+                    "Participantes — 0";
+
+                status(
+                    "Desconectado. Tentando reconectar..."
+                );
             });
 
             socket.on("connect_error", (erro) => {
                 console.error(erro);
-                status("Não foi possível conectar ao servidor.");
+
+                status(
+                    "Não foi possível conectar ao servidor."
+                );
 
                 $("erro-entrada").textContent =
-                    "Falha na conexão. Tentando novamente...";
+                    "Falha na conexão. " +
+                    "Tentando novamente...";
             });
 
-            socket.on("lista-participantes", atualizarParticipantes);
+            socket.on(
+                "lista-participantes",
+                atualizarParticipantes
+            );
 
-            socket.on("lista-transmissores", (lista) => {
-                for (const pessoa of lista) {
-                    nomes.set(pessoa.id, pessoa.nickname);
+            socket.on(
+                "lista-transmissores",
+                (lista) => {
+                    for (const pessoa of lista) {
+                        nomes.set(
+                            pessoa.id,
+                            pessoa.nickname
+                        );
 
-                    const card = cards.get(pessoa.id);
-                    if (card) card.nome.textContent = pessoa.nickname;
+                        const card =
+                            cards.get(pessoa.id);
+
+                        if (card) {
+                            card.nome.textContent =
+                                pessoa.nickname;
+                        }
+                    }
                 }
-            });
+            );
 
             socket.on("historico-chat", (lista) => {
                 $("mensagens").replaceChildren();
 
                 for (const mensagem of lista) {
-                    adicionarMensagem(mensagem, false, false);
+                    adicionarMensagem(
+                        mensagem,
+                        false,
+                        false
+                    );
                 }
             });
 
@@ -1553,36 +1987,74 @@
                 adicionarMensagem(dados, true);
             });
 
-            socket.on("nova-transmissao", (dados) => {
-                nomes.set(dados.id, dados.nickname);
+            socket.on(
+                "nova-transmissao",
+                (dados) => {
+                    nomes.set(
+                        dados.id,
+                        dados.nickname
+                    );
 
-                if (registrado && dados.id !== socket.id) {
-                    socket.emit("quero-assistir", { de: dados.id });
+                    if (
+                        registrado &&
+                        dados.id !== socket.id
+                    ) {
+                        socket.emit(
+                            "quero-assistir",
+                            { de: dados.id }
+                        );
+                    }
                 }
-            });
+            );
 
-            socket.on("pedir-tela", enviarTela);
+            socket.on(
+                "pedir-tela",
+                enviarTela
+            );
 
             socket.on("sinal-tela", (dados) => {
-                if (!dados?.transmissor || !dados?.de) return;
+                if (
+                    !dados?.transmissor ||
+                    !dados?.de
+                ) {
+                    return;
+                }
 
-                const chave = dados.transmissor + ":" + dados.de;
-                const geracao = geracaoConexao;
-                const anterior = filas.get(chave) || Promise.resolve();
+                const chave =
+                    dados.transmissor +
+                    ":" +
+                    dados.de;
+
+                const geracao =
+                    geracaoConexao;
+
+                const anterior =
+                    filas.get(chave) ||
+                    Promise.resolve();
 
                 const atual = anterior
                     .then(() => {
-                        if (geracao !== geracaoConexao) return;
+                        if (
+                            geracao !== geracaoConexao
+                        ) {
+                            return;
+                        }
+
                         return processarSinal(dados);
                     })
                     .catch((erro) => {
-                        console.error("Erro de sinalização:", erro);
+                        console.error(
+                            "Erro de sinalização:",
+                            erro
+                        );
                     });
 
                 filas.set(chave, atual);
 
                 atual.finally(() => {
-                    if (filas.get(chave) === atual) {
+                    if (
+                        filas.get(chave) === atual
+                    ) {
                         filas.delete(chave);
                     }
                 });
@@ -1591,18 +2063,33 @@
             socket.on("parou-tela", (dados) => {
                 if (!dados?.de) return;
 
-                fecharEntrada(recebimentos, dados.de);
+                fecharEntrada(
+                    recebimentos,
+                    dados.de
+                );
+
                 removerCard(dados.de);
             });
 
-            socket.on("participante-saiu", (dados) => {
-                if (!dados?.de) return;
+            socket.on(
+                "participante-saiu",
+                (dados) => {
+                    if (!dados?.de) return;
 
-                fecharEntrada(envios, dados.de);
-                fecharEntrada(recebimentos, dados.de);
-                removerCard(dados.de);
-                nomes.delete(dados.de);
-            });
+                    fecharEntrada(
+                        envios,
+                        dados.de
+                    );
+
+                    fecharEntrada(
+                        recebimentos,
+                        dados.de
+                    );
+
+                    removerCard(dados.de);
+                    nomes.delete(dados.de);
+                }
+            );
         }
 
         function limparPreviewImagem() {
@@ -1614,7 +2101,11 @@
             imagemPendente = null;
 
             $("arquivo-imagem").value = "";
-            $("preview-imagem").removeAttribute("src");
+
+            $("preview-imagem").removeAttribute(
+                "src"
+            );
+
             $("preview-anexo").hidden = true;
             $("info-imagem").textContent = "";
         }
@@ -1625,7 +2116,12 @@
                 return;
             }
 
-            if (enviandoImagem || !arquivo) return;
+            if (
+                enviandoImagem ||
+                !arquivo
+            ) {
+                return;
+            }
 
             const tipos = [
                 "image/jpeg",
@@ -1634,12 +2130,18 @@
             ];
 
             if (!tipos.includes(arquivo.type)) {
-                status("Envie somente imagens JPG, PNG ou WebP.");
+                status(
+                    "Envie somente imagens JPG, PNG ou WebP."
+                );
                 return;
             }
 
-            if (arquivo.size > LIMITE_IMAGEM_CHAT) {
-                status("A imagem ultrapassa o limite de 10 MB.");
+            if (
+                arquivo.size > LIMITE_IMAGEM_CHAT
+            ) {
+                status(
+                    "A imagem ultrapassa o limite de 10 MB."
+                );
                 return;
             }
 
@@ -1651,25 +2153,37 @@
             limparPreviewImagem();
 
             imagemPendente = arquivo;
-            previewUrl = URL.createObjectURL(arquivo);
 
-            $("preview-imagem").src = previewUrl;
+            previewUrl =
+                URL.createObjectURL(arquivo);
+
+            $("preview-imagem").src =
+                previewUrl;
 
             const tamanho = (
-                arquivo.size / (1024 * 1024)
+                arquivo.size /
+                (1024 * 1024)
             ).toFixed(2);
 
             $("info-imagem").textContent =
                 `${arquivo.name || "Print"} · ${tamanho} MB`;
 
             $("preview-anexo").hidden = false;
+
             abrirPainel("chat");
         }
 
         function obterTokenUpload() {
             return new Promise((resolve, reject) => {
-                if (!registrado || !socket?.connected) {
-                    reject(new Error("Você não está conectado."));
+                if (
+                    !registrado ||
+                    !socket?.connected
+                ) {
+                    reject(
+                        new Error(
+                            "Você não está conectado."
+                        )
+                    );
                     return;
                 }
 
@@ -1679,7 +2193,8 @@
                         if (erro) {
                             reject(
                                 new Error(
-                                    "O servidor não respondeu. Tente novamente."
+                                    "O servidor não respondeu. " +
+                                    "Tente novamente."
                                 )
                             );
                             return;
@@ -1704,56 +2219,107 @@
         $("form-entrada").onsubmit = (evento) => {
             evento.preventDefault();
 
-            const valor = $("nickname").value.trim();
+            const valor =
+                $("nickname").value.trim();
+
             if (!valor) return;
 
             nickname = valor.slice(0, 24);
-            $("erro-entrada").textContent = "Conectando...";
 
-            if (!socket) conectar();
-            else if (socket.connected) registrar();
-            else socket.connect();
+            $("erro-entrada").textContent =
+                "Conectando...";
+
+            if (!socket) {
+                conectar();
+            } else if (socket.connected) {
+                registrar();
+            } else {
+                socket.connect();
+            }
         };
 
         $("form-chat").onsubmit = (evento) => {
             evento.preventDefault();
 
-            const texto = $("texto-chat").value.trim();
-            if (!texto || !registrado || !socket?.connected) return;
+            const texto =
+                $("texto-chat").value.trim();
+
+            if (
+                !texto ||
+                !registrado ||
+                !socket?.connected
+            ) {
+                return;
+            }
 
             $("texto-chat").value = "";
 
-            socket.emit("mensagem-chat", { texto }, (resposta) => {
-                if (!resposta?.ok) {
-                    status(resposta?.erro || "Não foi possível enviar.");
+            socket.emit(
+                "mensagem-chat",
+                { texto },
+                (resposta) => {
+                    if (!resposta?.ok) {
+                        status(
+                            resposta?.erro ||
+                            "Não foi possível enviar."
+                        );
 
-                    if (!$("texto-chat").value) {
-                        $("texto-chat").value = texto;
+                        if (
+                            !$("texto-chat").value
+                        ) {
+                            $("texto-chat").value =
+                                texto;
+                        }
                     }
                 }
-            });
+            );
         };
 
-        $("compartilhar").onclick = iniciarTela;
-        $("parar").onclick = pararTela;
-        $("voltar-grade").onclick = voltarGrade;
+        $("compartilhar").onclick =
+            iniciarTela;
 
-        $("abrir-chat").onclick = () => abrirPainel("chat");
-        $("aba-chat").onclick = () => abrirPainel("chat");
-        $("abrir-pessoas").onclick = () => abrirPainel("pessoas");
-        $("aba-pessoas").onclick = () => abrirPainel("pessoas");
+        $("parar").onclick =
+            pararTela;
+
+        $("voltar-grade").onclick =
+            voltarGrade;
+
+        $("abrir-chat").onclick = () => {
+            abrirPainel("chat");
+        };
+
+        $("aba-chat").onclick = () => {
+            abrirPainel("chat");
+        };
+
+        $("abrir-pessoas").onclick = () => {
+            abrirPainel("pessoas");
+        };
+
+        $("aba-pessoas").onclick = () => {
+            abrirPainel("pessoas");
+        };
 
         $("fechar-lateral").onclick = () => {
             $("lateral").hidden = true;
-            $("layout").classList.add("sem-lateral");
+
+            $("layout").classList.add(
+                "sem-lateral"
+            );
         };
 
         $("copiar").onclick = async () => {
             try {
-                await navigator.clipboard.writeText(location.href);
+                await navigator.clipboard.writeText(
+                    location.href
+                );
+
                 status("Link copiado!");
             } catch {
-                window.prompt("Copie o link:", location.href);
+                window.prompt(
+                    "Copie o link:",
+                    location.href
+                );
             }
         };
 
@@ -1762,43 +2328,70 @@
         };
 
         $("arquivo-imagem").onchange = () => {
-            prepararImagem($("arquivo-imagem").files[0]);
+            prepararImagem(
+                $("arquivo-imagem").files[0]
+            );
         };
 
         $("cancelar-imagem").onclick = () => {
-            if (!enviandoImagem) limparPreviewImagem();
+            if (!enviandoImagem) {
+                limparPreviewImagem();
+            }
         };
 
-        $("texto-chat").addEventListener("paste", (evento) => {
-            if (!registrado || enviandoImagem) return;
+        $("texto-chat").addEventListener(
+            "paste",
+            (evento) => {
+                if (
+                    !registrado ||
+                    enviandoImagem
+                ) {
+                    return;
+                }
 
-            const itens = Array.from(
-                evento.clipboardData?.items || []
-            );
-
-            const itemImagem = itens.find((item) => {
-                return (
-                    item.kind === "file" &&
-                    item.type.startsWith("image/")
+                const itens = Array.from(
+                    evento.clipboardData?.items || []
                 );
-            });
 
-            if (!itemImagem) return;
+                const itemImagem = itens.find(
+                    (item) => {
+                        return (
+                            item.kind === "file" &&
+                            item.type.startsWith("image/")
+                        );
+                    }
+                );
 
-            evento.preventDefault();
-            prepararImagem(itemImagem.getAsFile());
-        });
+                if (!itemImagem) return;
+
+                evento.preventDefault();
+
+                prepararImagem(
+                    itemImagem.getAsFile()
+                );
+            }
+        );
 
         $("confirmar-imagem").onclick = async () => {
-            if (!imagemPendente || enviandoImagem || !registrado) return;
+            if (
+                !imagemPendente ||
+                enviandoImagem ||
+                !registrado
+            ) {
+                return;
+            }
 
             enviandoImagem = true;
+
             atualizarBotoes();
             status("Enviando imagem...");
 
             try {
-                const token = await obterTokenUpload();
-                const dados = new FormData();
+                const token =
+                    await obterTokenUpload();
+
+                const dados =
+                    new FormData();
 
                 dados.append(
                     "imagem",
@@ -1806,28 +2399,38 @@
                     imagemPendente.name || "print.png"
                 );
 
-                const resposta = await fetch("/api/imagens", {
-                    method: "POST",
-                    headers: {
-                        "X-Upload-Token": token
-                    },
-                    body: dados
-                });
+                const resposta = await fetch(
+                    "/api/imagens",
+                    {
+                        method: "POST",
+                        headers: {
+                            "X-Upload-Token": token
+                        },
+                        body: dados
+                    }
+                );
 
-                const resultado = await resposta.json().catch(() => ({
-                    erro: "Resposta inválida do servidor."
-                }));
+                const resultado =
+                    await resposta.json().catch(() => ({
+                        erro: "Resposta inválida do servidor."
+                    }));
 
-                if (!resposta.ok || !resultado.ok) {
+                if (
+                    !resposta.ok ||
+                    !resultado.ok
+                ) {
                     throw new Error(
-                        resultado.erro || "Não foi possível enviar."
+                        resultado.erro ||
+                        "Não foi possível enviar."
                     );
                 }
 
                 limparPreviewImagem();
                 status("Imagem enviada!");
             } catch (erro) {
-                status("Erro: " + erro.message);
+                status(
+                    "Erro: " + erro.message
+                );
             } finally {
                 enviandoImagem = false;
                 atualizarBotoes();
@@ -1838,11 +2441,19 @@
             $("visualizador-imagem").close();
         };
 
-        $("visualizador-imagem").addEventListener("close", () => {
-            $("imagem-ampliada").removeAttribute("src");
-        });
+        $("visualizador-imagem").addEventListener(
+            "close",
+            () => {
+                $("imagem-ampliada").removeAttribute(
+                    "src"
+                );
+            }
+        );
 
-        setInterval(atualizarEstatisticas, 1000);
+        setInterval(
+            atualizarEstatisticas,
+            1000
+        );
     </script>
 </body>
 </html>
