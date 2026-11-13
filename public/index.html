@@ -11,7 +11,6 @@
         video { width: 100%; max-height: 82vh; border-radius: 6px; background: #000; display: none; border: 1px solid #d4af37; cursor: pointer; }
         #aviso-tela { color: #8c968c; font-size: 1rem; text-align: center; }
         
-        /* Barra de Controles */
         #controles { position: absolute; bottom: 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; background: #181c18; padding: 8px 14px; border-radius: 8px; border: 1px solid #2f362f; z-index: 10; }
         button { padding: 8px 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.15s; }
         button:hover { opacity: 0.9; }
@@ -22,18 +21,15 @@
         .btn-ptt-ativo { background: #e67e22; color: #fff; }
         #status-link { font-size: 12px; color: #23a559; font-weight: bold; }
 
-        /* Controles de Volume Individual */
         .controle-vol-tela { display: none; align-items: center; gap: 6px; background: #252b25; padding: 6px 10px; border-radius: 5px; font-size: 12px; color: #d4af37; }
         .controle-vol-tela input[type="range"] { width: 75px; cursor: pointer; accent-color: #d4af37; padding: 0; }
 
-        /* Painel Lateral (Brasão + Operadores + Chat) */
         #chat-container { flex: 1; display: flex; flex-direction: column; background: #1b1f1b; border-left: 1px solid #2f362f; min-width: 310px; }
         #cabecalho-chat { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #222722; border-bottom: 2px solid #8b2626; }
         #cabecalho-chat img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid #d4af37; }
         #cabecalho-chat h3 { margin: 0; font-size: 15px; color: #d4af37; letter-spacing: 0.5px; }
         #cabecalho-chat span { font-size: 11px; color: #a3ada3; }
 
-        /* Lista de Operadores e Indicador de Voz */
         #painel-operadores { padding: 8px 14px; background: #171b17; border-bottom: 1px solid #2f362f; max-height: 150px; overflow-y: auto; }
         #painel-operadores small { color: #8c968c; font-weight: bold; font-size: 10px; text-transform: uppercase; display: block; margin-bottom: 6px; }
         #lista-usuarios { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -43,7 +39,6 @@
         .operador-badge.falando .ponto { background: #23a559; }
         .vol-op { width: 55px; height: 4px; cursor: pointer; accent-color: #23a559; padding: 0; margin-left: 4px; }
 
-        /* Mensagens */
         #mensagens { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .msg { background: #262b26; padding: 7px 10px; border-radius: 5px; word-wrap: break-word; font-size: 13px; }
         .msg strong { color: #d4af37; }
@@ -58,7 +53,7 @@
         <video id="video-tela" autoplay playsinline></video>
         <div id="controles">
             <button id="btn-mic" class="btn-cinza" onclick="alternarMicrofone()">🎤 Ligar Mic</button>
-            <button id="btn-ptt" class="btn-cinza" onclick="alternarModoPTT()" title="Segure a tecla para falar">📻 PTT: OFF</button>
+            <button id="btn-ptt" class="btn-cinza" onclick="alternarModoPTT()">📻 PTT: OFF</button>
             <button id="btn-tecla" class="btn-cinza" style="display:none;" onclick="configurarTeclaPTT()">Tecla: [V]</button>
             <button id="btn-compartilhar" class="btn-verde" onclick="iniciarCompartilhamento()">🖥️ Tela</button>
             <button id="btn-parar" class="btn-vermelho" style="display:none;" onclick="pararCompartilhamento()">⏹️ Parar</button>
@@ -101,8 +96,6 @@
         socket.emit('entrar-sala', nome);
 
         const configIce = { iceServers: [{ urls: 'stun:://google.com' }] };
-
-        // --- LISTA DE OPERADORES E VOLUME INDIVIDUAL ---
         const volumesOperadores = {};
 
         socket.on('lista-operadores', (operadores) => {
@@ -136,34 +129,34 @@
             }
         }
 
-        // --- DETECTOR VISUAL DE VOZ (ECONÔMICO) ---
         let audioCtx = null;
         function monitorarVolume(stream, idOperador) {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            const source = audioCtx.createMediaStreamSource(stream);
-            const analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 64;
-            source.connect(analyser);
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const source = audioCtx.createMediaStreamSource(stream);
+                const analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 64;
+                source.connect(analyser);
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-            const intervalo = setInterval(() => {
-                if (!stream.active) {
-                    clearInterval(intervalo);
-                    return;
-                }
-                analyser.getByteFrequencyData(dataArray);
-                let soma = 0;
-                for (let i = 0; i < dataArray.length; i++) soma += dataArray[i];
-                const badge = document.getElementById(`op-${idOperador}`);
-                if (badge) {
-                    badge.classList.toggle('falando', (soma / dataArray.length) > 14);
-                }
-            }, 120);
+                const intervalo = setInterval(() => {
+                    if (!stream.active) {
+                        clearInterval(intervalo);
+                        return;
+                    }
+                    analyser.getByteFrequencyData(dataArray);
+                    let soma = 0;
+                    for (let i = 0; i < dataArray.length; i++) soma += dataArray[i];
+                    const badge = document.getElementById(`op-${idOperador}`);
+                    if (badge) {
+                        badge.classList.toggle('falando', (soma / dataArray.length) > 14);
+                    }
+                }, 120);
+            } catch (e) {}
         }
 
-        // --- SISTEMA DE VOZ E PUSH-TO-TALK (CORRIGIDO) ---
         let streamMic = null;
         let micAtivo = false;
         let modoPTT = false;
@@ -174,8 +167,18 @@
 
         async function inicializarMicrofone() {
             if (!streamMic) {
-                try {
-                    streamMic = await navigator.mediaDevices.getUserMedia({
-                        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-                        video: false
-                    });
+                streamMic = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                });
+                monitorarVolume(streamMic, socket.id);
+                Object.values(conexoesVoz).forEach(pc => {
+                    streamMic.getTracks().forEach(track => pc.addTrack(track, streamMic));
+                });
+            }
+        }
+
+        async function alternarMicrofone() {
+            try {
+                await inicializarMicrofone();
+                if (modoPTT) {
