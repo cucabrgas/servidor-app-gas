@@ -70,10 +70,8 @@
             <img src="brasao.png" alt="Brasão G.A.S" onerror="this.style.display='none'">
             <h2>APP G.A.S OFICIAL</h2>
             <p>Grupo de Assalto • Rádio e Transmissão</p>
-            <form id="form-login">
-                <input type="text" id="input-nickname" placeholder="Digite seu nickname..." maxlength="22" required autofocus>
-                <button type="submit">ENTRAR NA SALA</button>
-            </form>
+            <input type="text" id="input-nickname" placeholder="Digite seu nickname..." maxlength="22" autofocus>
+            <button type="button" id="btn-entrar">ENTRAR NA SALA</button>
         </div>
     </div>
 
@@ -81,19 +79,19 @@
         <div id="aviso-tela">APP G.A.S oficial — Nenhuma transmissão de tela ativa no momento.</div>
         <video id="video-tela" autoplay playsinline></video>
         <div id="controles">
-            <button id="btn-mic" class="btn-cinza">🎤 Ligar Mic</button>
-            <button id="btn-ptt" class="btn-cinza" title="Segure a tecla para falar">📻 PTT: OFF</button>
-            <button id="btn-tecla" class="btn-cinza" style="display:none;">Tecla: [V]</button>
-            <button id="btn-compartilhar" class="btn-verde">🖥️ Tela</button>
-            <button id="btn-parar" class="btn-vermelho" style="display:none;">⏹️ Parar</button>
+            <button type="button" id="btn-mic" class="btn-cinza">🎤 Ligar Mic</button>
+            <button type="button" id="btn-ptt" class="btn-cinza" title="Segure a tecla para falar">📻 PTT: OFF</button>
+            <button type="button" id="btn-tecla" class="btn-cinza" style="display:none;">Tecla: [V]</button>
+            <button type="button" id="btn-compartilhar" class="btn-verde">🖥️ Tela</button>
+            <button type="button" id="btn-parar" class="btn-vermelho" style="display:none;">⏹️ Parar</button>
             
             <div id="box-vol-tela" class="controle-vol-tela" title="Volume do som da tela/jogo">
                 <span>🔊</span>
                 <input type="range" id="slider-vol-tela" min="0" max="1" step="0.05" value="0.8">
             </div>
 
-            <button id="btn-fullscreen" class="btn-cinza" style="display:none;">⛶ Tela Cheia</button>
-            <button id="btn-link" class="btn-dourado">🔗 Link</button>
+            <button type="button" id="btn-fullscreen" class="btn-cinza" style="display:none;">⛶ Tela Cheia</button>
+            <button type="button" id="btn-link" class="btn-dourado">🔗 Link</button>
             <span id="status-link"></span>
         </div>
     </div>
@@ -118,9 +116,26 @@
 
     <div id="audios-remotos"></div>
 
-    <script src="https://socket.io"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
+        let socket = null;
+        try {
+            socket = io();
+        } catch (err) {
+            alert("Erro ao conectar ao servidor: " + err.message);
+        }
+
+        function entrarNaSala() {
+            const nick = document.getElementById('input-nickname').value.trim() || 'Operador';
+            document.getElementById('modal-login').style.display = 'none';
+            if (socket) socket.emit('entrar-sala', nick);
+        }
+
+        document.getElementById('btn-entrar').addEventListener('click', entrarNaSala);
+        document.getElementById('input-nickname').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') entrarNaSala();
+        });
+
         const configIce = {
             iceServers: [
                 { urls: 'stun:://google.com' },
@@ -129,37 +144,23 @@
             ]
         };
 
-        // --- ENTRADA COM NICKNAME ---
-        document.getElementById('form-login').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const nick = document.getElementById('input-nickname').value.trim() || 'Operador';
-            document.getElementById('modal-login').style.display = 'none';
-            socket.emit('entrar-sala', nick);
-        });
-
-        // --- LISTA DE OPERADORES ---
         const volumesOperadores = {};
-        socket.on('lista-operadores', (operadores) => {
-            const lista = document.getElementById('lista-usuarios');
-            lista.innerHTML = '';
-            Object.entries(operadores).forEach(([id, nomeOp]) => {
-                const badge = document.createElement('div');
-                badge.className = 'operador-badge';
-                badge.id = 'op-' + id;
+        if (socket) {
+            socket.on('lista-operadores', (operadores) => {
+                const lista = document.getElementById('lista-usuarios');
+                lista.innerHTML = '';
+                Object.entries(operadores).forEach(([id, nomeOp]) => {
+                    const badge = document.createElement('div');
+                    badge.className = 'operador-badge';
+                    badge.id = 'op-' + id;
 
-                if (id === socket.id) {
-                    badge.innerHTML = '<span class="ponto"></span><span>' + nomeOp + ' (Você)</span>';
-                } else {
-                    const volAtual = volumesOperadores[id] !== undefined ? volumesOperadores[id] : 1;
-                    badge.innerHTML = '<span class="ponto"></span><span>' + nomeOp + '</span>';
-                    const slider = document.createElement('input');
-                    slider.type = 'range';
-                    slider.className = 'vol-op';
-                    slider.min = '0';
-                    slider.max = '1';
-                    slider.step = '0.05';
-                    slider.value = volAtual;
-                    slider.title = 'Volume de ' + nomeOp;
-                    slider.addEventListener('input', () => {
-                        volumesOperadores[id] = parseFloat(slider.value);
-                        const audioEl = document.getElementById('audio-' + id);
+                    if (id === socket.id) {
+                        badge.innerHTML = '<span class="ponto"></span><span>' + nomeOp + ' (Você)</span>';
+                    } else {
+                        const volAtual = volumesOperadores[id] !== undefined ? volumesOperadores[id] : 1;
+                        badge.innerHTML = '<span class="ponto"></span><span>' + nomeOp + '</span>';
+                        const slider = document.createElement('input');
+                        slider.type = 'range';
+                        slider.className = 'vol-op';
+                        slider.min = '0';
+                        slider.max = '1';
