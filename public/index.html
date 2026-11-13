@@ -2,15 +2,18 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Transmissões do G.A.S</title>
+    <title>APP G.A.S oficial</title>
 
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         :root {
             color-scheme: dark;
@@ -23,12 +26,16 @@
 
         body {
             margin: 0;
+            min-height: 100vh;
             background: var(--fundo);
             color: #fff;
             font-family: "Segoe UI", sans-serif;
         }
 
-        button, input { font: inherit; }
+        button,
+        input {
+            font: inherit;
+        }
 
         button {
             padding: 9px 13px;
@@ -39,17 +46,38 @@
             font-weight: 600;
         }
 
+        button:hover {
+            filter: brightness(1.1);
+        }
+
         button:disabled {
-            opacity: .45;
+            opacity: 0.45;
             cursor: not-allowed;
         }
 
-        [hidden] { display: none !important; }
+        [hidden] {
+            display: none !important;
+        }
 
-        .verde { background: #238b4e; color: #fff; }
-        .vermelho { background: #c4383c; color: #fff; }
-        .dourado { background: var(--dourado); color: #151815; }
-        .cinza { background: #363f36; color: #fff; }
+        .verde {
+            background: #238b4e;
+            color: #fff;
+        }
+
+        .vermelho {
+            background: #c4383c;
+            color: #fff;
+        }
+
+        .dourado {
+            background: var(--dourado);
+            color: #151815;
+        }
+
+        .cinza {
+            background: #363f36;
+            color: #fff;
+        }
 
         header {
             padding: 14px 18px;
@@ -71,6 +99,7 @@
         #identidade {
             color: var(--texto);
             font-size: 13px;
+            overflow-wrap: anywhere;
         }
 
         #barra {
@@ -86,6 +115,7 @@
             color: var(--texto);
             font-size: 13px;
             min-height: 28px;
+            overflow-wrap: anywhere;
         }
 
         #layout {
@@ -96,9 +126,13 @@
             align-items: start;
         }
 
-        #layout.sem-lateral { grid-template-columns: 1fr; }
+        #layout.sem-lateral {
+            grid-template-columns: 1fr;
+        }
 
-        #area-telas { min-width: 0; }
+        #area-telas {
+            min-width: 0;
+        }
 
         #aviso {
             text-align: center;
@@ -115,7 +149,9 @@
             gap: 14px;
         }
 
-        #destaque:not(:empty) { margin-bottom: 15px; }
+        #destaque:not(:empty) {
+            margin-bottom: 15px;
+        }
 
         .tela {
             min-width: 0;
@@ -125,7 +161,9 @@
             background: var(--painel);
         }
 
-        #destaque .tela { border-color: var(--dourado); }
+        #destaque .tela {
+            border-color: var(--dourado);
+        }
 
         .tela-topo {
             padding: 8px 11px;
@@ -195,7 +233,11 @@
             border-bottom: 1px solid var(--borda);
         }
 
-        #abas button { flex: 1; }
+        #abas button {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+        }
 
         #mensagens {
             height: 390px;
@@ -286,7 +328,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background: rgba(0, 0, 0, .94);
+            background: rgba(0, 0, 0, 0.94);
         }
 
         #form-entrada {
@@ -313,7 +355,9 @@
             margin: 9px 0 15px;
         }
 
-        #form-entrada button { width: 100%; }
+        #form-entrada button {
+            width: 100%;
+        }
 
         #erro-entrada {
             margin-top: 12px;
@@ -322,11 +366,32 @@
         }
 
         @media (max-width: 850px) {
-            #layout { grid-template-columns: 1fr; }
-            #lateral { position: static; }
-            #mensagens { height: 300px; }
-            header, #barra { padding-left: 12px; padding-right: 12px; }
-            #layout { padding-left: 12px; padding-right: 12px; }
+            #layout {
+                grid-template-columns: 1fr;
+            }
+
+            #lateral {
+                position: static;
+            }
+
+            #mensagens {
+                height: 300px;
+            }
+
+            header,
+            #barra {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            #layout {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            h1 {
+                font-size: 15px;
+            }
         }
     </style>
 </head>
@@ -334,10 +399,12 @@
 <body>
     <div id="entrada">
         <form id="form-entrada">
-            <h2>Transmissões do G.A.S</h2>
+            <h2>APP G.A.S oficial</h2>
+
             <p>Escolha seu nickname para entrar.</p>
 
             <label for="nickname">Nickname</label>
+
             <input
                 type="text"
                 id="nickname"
@@ -356,7 +423,7 @@
     </div>
 
     <header>
-        <h1>Transmissões do G.A.S</h1>
+        <h1>APP G.A.S OFICIAL — TRANSMISSÃO</h1>
         <span id="identidade"></span>
     </header>
 
@@ -373,12 +440,22 @@
             Copiar Link
         </button>
 
-        <button id="abrir-chat" class="cinza">Chat</button>
-        <button id="abrir-pessoas" class="cinza">Participantes — 0</button>
-        <button id="voltar-grade" class="cinza" hidden>Voltar à grade</button>
+        <button id="abrir-chat" class="cinza">
+            Chat
+        </button>
+
+        <button id="abrir-pessoas" class="cinza">
+            Participantes — 0
+        </button>
+
+        <button id="voltar-grade" class="cinza" hidden>
+            Voltar à grade
+        </button>
     </div>
 
-    <div id="status" role="status">Escolha um nickname para entrar.</div>
+    <div id="status" role="status">
+        Escolha um nickname para entrar.
+    </div>
 
     <div id="layout">
         <main id="area-telas">
@@ -389,9 +466,19 @@
 
         <aside id="lateral">
             <div id="abas">
-                <button id="aba-chat" class="dourado">Chat</button>
-                <button id="aba-pessoas" class="cinza">Participantes</button>
-                <button id="fechar-lateral" class="cinza" aria-label="Fechar painel">
+                <button id="aba-chat" class="dourado">
+                    Chat
+                </button>
+
+                <button id="aba-pessoas" class="cinza">
+                    Participantes
+                </button>
+
+                <button
+                    id="fechar-lateral"
+                    class="cinza"
+                    aria-label="Fechar painel"
+                >
                     Fechar
                 </button>
             </div>
@@ -410,6 +497,7 @@
                         disabled
                         required
                     >
+
                     <button id="enviar-chat" class="verde" disabled>
                         Enviar
                     </button>
@@ -454,8 +542,10 @@
         }
 
         function atualizarBotoes() {
-            $("compartilhar").disabled = !registrado || capturando;
-            $("compartilhar").hidden = !!streamLocal;
+            $("compartilhar").disabled =
+                !registrado || capturando;
+
+            $("compartilhar").hidden = Boolean(streamLocal);
             $("parar").hidden = !streamLocal;
 
             $("texto-chat").disabled = !registrado;
@@ -474,14 +564,18 @@
 
         function abrirPainel(aba) {
             abaAtual = aba;
+
             $("lateral").hidden = false;
             $("layout").classList.remove("sem-lateral");
 
             $("painel-chat").hidden = aba !== "chat";
             $("painel-pessoas").hidden = aba !== "pessoas";
 
-            $("aba-chat").className = aba === "chat" ? "dourado" : "cinza";
-            $("aba-pessoas").className = aba === "pessoas" ? "dourado" : "cinza";
+            $("aba-chat").className =
+                aba === "chat" ? "dourado" : "cinza";
+
+            $("aba-pessoas").className =
+                aba === "pessoas" ? "dourado" : "cinza";
 
             if (aba === "chat") {
                 naoLidas = 0;
@@ -492,7 +586,11 @@
             }
         }
 
-        function adicionarMensagem(dados, sistema = false, contar = true) {
+        function adicionarMensagem(
+            dados,
+            sistema = false,
+            contar = true
+        ) {
             const item = document.createElement("div");
 
             if (sistema) {
@@ -510,11 +608,15 @@
 
                 const horario = document.createElement("span");
                 horario.className = "horario";
-                horario.textContent = new Date(dados.horario)
-                    .toLocaleTimeString("pt-BR", {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                    });
+
+                horario.textContent =
+                    new Date(dados.horario).toLocaleTimeString(
+                        "pt-BR",
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    );
 
                 const texto = document.createElement("div");
                 texto.className = "mensagem-texto";
@@ -530,12 +632,16 @@
                 $("mensagens").firstElementChild.remove();
             }
 
-            $("mensagens").scrollTop = $("mensagens").scrollHeight;
+            $("mensagens").scrollTop =
+                $("mensagens").scrollHeight;
 
             if (
                 contar &&
                 !sistema &&
-                ($("lateral").hidden || abaAtual !== "chat") &&
+                (
+                    $("lateral").hidden ||
+                    abaAtual !== "chat"
+                ) &&
                 dados.de !== socket?.id
             ) {
                 naoLidas++;
@@ -556,11 +662,17 @@
                 linha.className = "pessoa";
 
                 const nome = document.createElement("div");
+
                 nome.textContent =
                     pessoa.nickname +
-                    (pessoa.id === socket.id ? " (você)" : "");
+                    (
+                        pessoa.id === socket.id
+                            ? " (você)"
+                            : ""
+                    );
 
                 const estado = document.createElement("small");
+
                 estado.textContent = pessoa.compartilhando
                     ? "Compartilhando tela"
                     : "Na sala";
@@ -573,8 +685,10 @@
         function voltarGrade() {
             if (destaqueId && cards.has(destaqueId)) {
                 const card = cards.get(destaqueId);
+
                 $("grade").append(card.elemento);
                 card.botaoDestaque.textContent = "Destacar";
+
                 tocar(card);
             }
 
@@ -645,4 +759,761 @@
             botaoDestaque.onclick = () => destacar(id);
 
             const fullscreen = document.createElement("button");
-            fullscreen.className =
+            fullscreen.className = "cinza";
+            fullscreen.textContent = "Tela cheia";
+
+            fullscreen.onclick = async () => {
+                try {
+                    if (video.requestFullscreen) {
+                        await video.requestFullscreen();
+                    } else {
+                        status(
+                            "Tela cheia indisponível neste navegador."
+                        );
+                    }
+                } catch (erro) {
+                    console.error(erro);
+                    status(
+                        "Não foi possível abrir em tela cheia."
+                    );
+                }
+            };
+
+            video.ondblclick = fullscreen.onclick;
+
+            controles.append(
+                reproduzir,
+                botaoDestaque,
+                fullscreen
+            );
+
+            if (!local) {
+                const label = document.createElement("label");
+                label.textContent = "Volume ";
+
+                const volume = document.createElement("input");
+                volume.type = "range";
+                volume.min = "0";
+                volume.max = "1";
+                volume.step = "0.05";
+                volume.value = "0.8";
+
+                volume.setAttribute(
+                    "aria-label",
+                    `Volume de ${nome}`
+                );
+
+                volume.oninput = () => {
+                    video.volume = Number(volume.value);
+                    video.muted = video.volume === 0;
+                };
+
+                label.append(volume);
+                controles.append(label);
+            }
+
+            elemento.append(topo, video, controles);
+            $("grade").append(elemento);
+
+            const card = {
+                elemento,
+                nome: rotulo,
+                video,
+                reproduzir,
+                botaoDestaque
+            };
+
+            reproduzir.onclick = () => tocar(card);
+
+            cards.set(id, card);
+            atualizarAviso();
+
+            return card;
+        }
+
+        async function tocar(card) {
+            try {
+                await card.video.play();
+                card.reproduzir.hidden = true;
+            } catch {
+                card.reproduzir.hidden = false;
+            }
+        }
+
+        function removerCard(id) {
+            const card = cards.get(id);
+            if (!card) return;
+
+            if (destaqueId === id) {
+                destaqueId = null;
+                $("voltar-grade").hidden = true;
+            }
+
+            card.video.pause();
+            card.video.srcObject = null;
+            card.elemento.remove();
+
+            cards.delete(id);
+            atualizarAviso();
+        }
+
+        function fecharEntrada(mapa, id) {
+            const entrada = mapa.get(id);
+            if (!entrada) return;
+
+            entrada.pc.ontrack = null;
+            entrada.pc.onicecandidate = null;
+            entrada.pc.close();
+
+            mapa.delete(id);
+        }
+
+        function limparRemotos() {
+            for (const id of [...envios.keys()]) {
+                fecharEntrada(envios, id);
+            }
+
+            for (const id of [...recebimentos.keys()]) {
+                fecharEntrada(recebimentos, id);
+                removerCard(id);
+            }
+
+            filas.clear();
+        }
+
+        function emitirSinal(destino, transmissor, sinal) {
+            if (!registrado || !socket?.connected) return;
+
+            socket.emit("sinal-tela", {
+                para: destino,
+                transmissor,
+                sinal
+            });
+        }
+
+        function criarConexao(
+            mapa,
+            id,
+            destino,
+            transmissor
+        ) {
+            const entrada = {
+                pc: new RTCPeerConnection(configIce),
+                candidatos: [],
+                stream: new MediaStream()
+            };
+
+            mapa.set(id, entrada);
+
+            entrada.pc.onicecandidate = (evento) => {
+                if (evento.candidate) {
+                    emitirSinal(destino, transmissor, {
+                        candidate: evento.candidate
+                    });
+                }
+            };
+
+            return entrada;
+        }
+
+        async function iniciarTela() {
+            if (
+                !registrado ||
+                streamLocal ||
+                capturando
+            ) {
+                return;
+            }
+
+            if (!navigator.mediaDevices?.getDisplayMedia) {
+                status(
+                    "Captura indisponível neste navegador. " +
+                    "Use HTTPS e um navegador compatível."
+                );
+                return;
+            }
+
+            capturando = true;
+            atualizarBotoes();
+
+            try {
+                const stream =
+                    await navigator.mediaDevices.getDisplayMedia({
+                        video: true,
+                        audio: true
+                    });
+
+                if (!registrado || !socket.connected) {
+                    stream.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+
+                    status(
+                        "Reconecte-se antes de compartilhar."
+                    );
+                    return;
+                }
+
+                streamLocal = stream;
+
+                const card = criarCard(
+                    "local",
+                    nickname,
+                    true
+                );
+
+                card.video.srcObject = streamLocal;
+                tocar(card);
+
+                const faixa =
+                    streamLocal.getVideoTracks()[0];
+
+                if (faixa) {
+                    faixa.onended = pararTela;
+                }
+
+                socket.emit("iniciou-tela");
+                status(
+                    "Sua tela está sendo compartilhada."
+                );
+            } catch (erro) {
+                console.error(erro);
+
+                if (
+                    erro.name === "NotAllowedError" ||
+                    erro.name === "AbortError"
+                ) {
+                    status(
+                        "Compartilhamento cancelado " +
+                        "ou não autorizado."
+                    );
+                } else {
+                    status(
+                        "Erro ao capturar: " + erro.message
+                    );
+                }
+            } finally {
+                capturando = false;
+                atualizarBotoes();
+            }
+        }
+
+        function pararTela() {
+            if (!streamLocal) return;
+
+            streamLocal.getTracks().forEach((track) => {
+                track.onended = null;
+                track.stop();
+            });
+
+            streamLocal = null;
+
+            for (const id of [...envios.keys()]) {
+                fecharEntrada(envios, id);
+            }
+
+            removerCard("local");
+
+            if (registrado && socket?.connected) {
+                socket.emit("parou-tela");
+            }
+
+            atualizarBotoes();
+            status(
+                "Sua transmissão foi encerrada."
+            );
+        }
+
+        async function enviarTela(dados) {
+            if (!streamLocal || !dados?.para) return;
+
+            const espectador = dados.para;
+
+            if (envios.has(espectador)) return;
+
+            const meuId = socket.id;
+
+            const entrada = criarConexao(
+                envios,
+                espectador,
+                espectador,
+                meuId
+            );
+
+            try {
+                streamLocal.getTracks().forEach((track) => {
+                    entrada.pc.addTrack(
+                        track,
+                        streamLocal
+                    );
+                });
+
+                const oferta =
+                    await entrada.pc.createOffer();
+
+                await entrada.pc.setLocalDescription(oferta);
+
+                if (
+                    envios.get(espectador) !== entrada
+                ) {
+                    return;
+                }
+
+                emitirSinal(espectador, meuId, {
+                    sdp: entrada.pc.localDescription
+                });
+            } catch (erro) {
+                console.error(
+                    "Erro ao enviar tela:",
+                    erro
+                );
+
+                if (
+                    envios.get(espectador) === entrada
+                ) {
+                    fecharEntrada(
+                        envios,
+                        espectador
+                    );
+                }
+            }
+        }
+
+        async function processarSinal(dados) {
+            if (!registrado || !dados?.sinal) return;
+
+            const souTransmissor =
+                dados.transmissor === socket.id;
+
+            const mapa = souTransmissor
+                ? envios
+                : recebimentos;
+
+            const id = souTransmissor
+                ? dados.de
+                : dados.transmissor;
+
+            if (
+                !souTransmissor &&
+                dados.de !== id
+            ) {
+                return;
+            }
+
+            let entrada = mapa.get(id);
+
+            if (!entrada) {
+                if (souTransmissor) return;
+
+                entrada = criarConexao(
+                    recebimentos,
+                    id,
+                    id,
+                    id
+                );
+
+                nomes.set(
+                    id,
+                    dados.nickname ||
+                    nomes.get(id) ||
+                    "Participante"
+                );
+
+                entrada.pc.ontrack = (evento) => {
+                    const card = criarCard(
+                        id,
+                        nomes.get(id) || "Participante"
+                    );
+
+                    if (evento.streams[0]) {
+                        card.video.srcObject =
+                            evento.streams[0];
+                    } else {
+                        entrada.stream.addTrack(
+                            evento.track
+                        );
+
+                        card.video.srcObject =
+                            entrada.stream;
+                    }
+
+                    tocar(card);
+                };
+            }
+
+            const pc = entrada.pc;
+            const sinal = dados.sinal;
+
+            if (sinal.sdp) {
+                await pc.setRemoteDescription(
+                    sinal.sdp
+                );
+
+                if (mapa.get(id) !== entrada) return;
+
+                while (entrada.candidatos.length) {
+                    await pc.addIceCandidate(
+                        entrada.candidatos.shift()
+                    );
+                }
+
+                if (sinal.sdp.type === "offer") {
+                    const resposta =
+                        await pc.createAnswer();
+
+                    await pc.setLocalDescription(
+                        resposta
+                    );
+
+                    if (
+                        mapa.get(id) !== entrada
+                    ) {
+                        return;
+                    }
+
+                    emitirSinal(
+                        dados.de,
+                        dados.transmissor,
+                        {
+                            sdp: pc.localDescription
+                        }
+                    );
+                }
+            } else if (sinal.candidate) {
+                if (pc.remoteDescription) {
+                    await pc.addIceCandidate(
+                        sinal.candidate
+                    );
+                } else {
+                    entrada.candidatos.push(
+                        sinal.candidate
+                    );
+                }
+            }
+        }
+
+        function registrar() {
+            if (!nickname || !socket?.connected) return;
+
+            socket.emit(
+                "registrar",
+                { nickname },
+                (resposta) => {
+                    if (!resposta?.ok) {
+                        registrado = false;
+                        $("entrada").hidden = false;
+
+                        $("erro-entrada").textContent =
+                            resposta?.erro ||
+                            "Erro ao entrar.";
+
+                        atualizarBotoes();
+                        return;
+                    }
+
+                    registrado = true;
+                    nickname = resposta.nickname;
+
+                    $("entrada").hidden = true;
+                    $("erro-entrada").textContent = "";
+
+                    $("identidade").textContent =
+                        "Você: " + nickname;
+
+                    const local = cards.get("local");
+
+                    if (local) {
+                        local.nome.textContent =
+                            nickname;
+                    }
+
+                    atualizarBotoes();
+                    status("Conectado à sala.");
+
+                    if (streamLocal) {
+                        socket.emit("iniciou-tela");
+                    }
+
+                    socket.emit("quero-assistir");
+                }
+            );
+        }
+
+        function conectar() {
+            if (typeof io !== "function") {
+                $("erro-entrada").textContent =
+                    "Socket.IO não carregou. " +
+                    "Abra a página pelo servidor.";
+
+                return;
+            }
+
+            socket = io();
+
+            socket.on("connect", registrar);
+
+            socket.on("disconnect", () => {
+                registrado = false;
+
+                limparRemotos();
+                atualizarBotoes();
+
+                status(
+                    "Desconectado. Tentando reconectar..."
+                );
+            });
+
+            socket.on("connect_error", (erro) => {
+                console.error(erro);
+
+                status(
+                    "Não foi possível conectar ao servidor."
+                );
+
+                $("erro-entrada").textContent =
+                    "Falha na conexão. " +
+                    "Tentando novamente...";
+            });
+
+            socket.on(
+                "lista-participantes",
+                atualizarParticipantes
+            );
+
+            socket.on(
+                "lista-transmissores",
+                (lista) => {
+                    for (const pessoa of lista) {
+                        nomes.set(
+                            pessoa.id,
+                            pessoa.nickname
+                        );
+
+                        const card =
+                            cards.get(pessoa.id);
+
+                        if (card) {
+                            card.nome.textContent =
+                                pessoa.nickname;
+                        }
+                    }
+                }
+            );
+
+            socket.on("historico-chat", (lista) => {
+                $("mensagens").replaceChildren();
+
+                for (const mensagem of lista) {
+                    adicionarMensagem(
+                        mensagem,
+                        false,
+                        false
+                    );
+                }
+            });
+
+            socket.on("mensagem-chat", (dados) => {
+                adicionarMensagem(dados);
+            });
+
+            socket.on("aviso-chat", (dados) => {
+                adicionarMensagem(dados, true);
+            });
+
+            socket.on(
+                "nova-transmissao",
+                (dados) => {
+                    nomes.set(
+                        dados.id,
+                        dados.nickname
+                    );
+
+                    if (
+                        registrado &&
+                        dados.id !== socket.id
+                    ) {
+                        socket.emit(
+                            "quero-assistir",
+                            { de: dados.id }
+                        );
+                    }
+                }
+            );
+
+            socket.on("pedir-tela", enviarTela);
+
+            socket.on("sinal-tela", (dados) => {
+                if (
+                    !dados?.transmissor ||
+                    !dados?.de
+                ) {
+                    return;
+                }
+
+                const chave =
+                    dados.transmissor +
+                    ":" +
+                    dados.de;
+
+                const anterior =
+                    filas.get(chave) ||
+                    Promise.resolve();
+
+                const atual = anterior
+                    .then(() => {
+                        return processarSinal(dados);
+                    })
+                    .catch((erro) => {
+                        console.error(
+                            "Erro de sinalização:",
+                            erro
+                        );
+                    });
+
+                filas.set(chave, atual);
+
+                atual.finally(() => {
+                    if (
+                        filas.get(chave) === atual
+                    ) {
+                        filas.delete(chave);
+                    }
+                });
+            });
+
+            socket.on("parou-tela", (dados) => {
+                if (!dados?.de) return;
+
+                fecharEntrada(
+                    recebimentos,
+                    dados.de
+                );
+
+                removerCard(dados.de);
+            });
+
+            socket.on(
+                "participante-saiu",
+                (dados) => {
+                    if (!dados?.de) return;
+
+                    fecharEntrada(
+                        envios,
+                        dados.de
+                    );
+
+                    fecharEntrada(
+                        recebimentos,
+                        dados.de
+                    );
+
+                    removerCard(dados.de);
+                    nomes.delete(dados.de);
+                }
+            );
+        }
+
+        $("form-entrada").onsubmit = (evento) => {
+            evento.preventDefault();
+
+            const valor =
+                $("nickname").value.trim();
+
+            if (!valor) return;
+
+            nickname = valor.slice(0, 24);
+
+            $("erro-entrada").textContent =
+                "Conectando...";
+
+            if (!socket) {
+                conectar();
+            } else if (socket.connected) {
+                registrar();
+            } else {
+                socket.connect();
+            }
+        };
+
+        $("form-chat").onsubmit = (evento) => {
+            evento.preventDefault();
+
+            const texto =
+                $("texto-chat").value.trim();
+
+            if (
+                !texto ||
+                !registrado ||
+                !socket?.connected
+            ) {
+                return;
+            }
+
+            $("texto-chat").value = "";
+
+            socket.emit(
+                "mensagem-chat",
+                { texto },
+                (resposta) => {
+                    if (!resposta?.ok) {
+                        status(
+                            resposta?.erro ||
+                            "Não foi possível enviar."
+                        );
+
+                        if (
+                            !$("texto-chat").value
+                        ) {
+                            $("texto-chat").value =
+                                texto;
+                        }
+                    }
+                }
+            );
+        };
+
+        $("compartilhar").onclick = iniciarTela;
+        $("parar").onclick = pararTela;
+        $("voltar-grade").onclick = voltarGrade;
+
+        $("abrir-chat").onclick = () => {
+            abrirPainel("chat");
+        };
+
+        $("aba-chat").onclick = () => {
+            abrirPainel("chat");
+        };
+
+        $("abrir-pessoas").onclick = () => {
+            abrirPainel("pessoas");
+        };
+
+        $("aba-pessoas").onclick = () => {
+            abrirPainel("pessoas");
+        };
+
+        $("fechar-lateral").onclick = () => {
+            $("lateral").hidden = true;
+
+            $("layout").classList.add(
+                "sem-lateral"
+            );
+        };
+
+        $("copiar").onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(
+                    location.href
+                );
+
+                status("Link copiado!");
+            } catch {
+                window.prompt(
+                    "Copie o link:",
+                    location.href
+                );
+            }
+        };
+    </script>
+</body>
+</html>
