@@ -6,60 +6,79 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: { origin: "*" }
+    cors: { origin: "*" },
+    pingInterval: 10000,
+    pingTimeout: 5000
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Guarda os operadores conectados { socketId: nome }
-const operadoresOnline = {};
+const operadores = {};
+let transmissorAtual = null;
 
 io.on('connection', (socket) => {
     socket.on('entrar-sala', (nome) => {
-        socket.nome = nome || 'Operador';
-        operadoresOnline[socket.id] = socket.nome;
+        operadores[socket.id] = nome || 'Operador';
+        io.emit('lista-operadores', operadores);
+        socket.broadcast.emit('novo-usuario-voz', { id: socket.id, nome: operadores[socket.id] });
 
-        io.emit('chat-msg', { usuario: 'Sistema', texto: `${socket.nome} entrou na sala.` });
-        io.emit('lista-operadores', operadoresOnline);
-
-        socket.broadcast.emit('novo-usuario-voz', { id: socket.id, nome: socket.nome });
+        if (transmissorAtual && operadores[transmissorAtual]) {
+            io.to(transmissorAtual).emit('pedir-tela', { para: socket.id });
+        }
     });
 
-    socket.on('chat-msg', (texto) => {
-        io.emit('chat-msg', { usuario: socket.nome, texto });
+    socket.on('chat-msg', (msg) => {
+        const textoLimpo = String(msg).slice(0, 400);
+        io.emit('chat-msg', {
+            usuario: operadores[socket.id] || 'Operador',
+            texto: textoLimpo
+        });
     });
 
     socket.on('sinal-voz', (dados) => {
         io.to(dados.para).emit('sinal-voz', {
             de: socket.id,
-            sinal: dados.sinal,
-            nome: socket.nome
+            sinal: dados.sinal
+        });
+    });
+
+    socket.on('iniciou-tela', () => {
+        transmissorAtual = socket.id;
+        Object.keys(operadores).forEach((idOp) => {
+            if (idOp !== socket.id) {
+                socket.emit('pedir-tela', { para: idOp });
+            }
         });
     });
 
     socket.on('sinal-tela', (dados) => {
-        socket.broadcast.emit('sinal-tela', {
-            remetente: socket.id,
-            sinal: dados.sinal,
-            nome: socket.nome
-        });
+        if (dados.para) {
+            io.to(dados.para).emit('sinal-tela', {
+                de: socket.id,
+                sinal: dados.sinal
+            });
+        }
     });
 
     socket.on('parou-tela', () => {
+        if (transmissorAtual === socket.id) {
+            transmissorAtual = null;
+        }
         socket.broadcast.emit('parou-tela');
     });
 
     socket.on('disconnect', () => {
-        if (socket.nome) {
-            delete operadoresOnline[socket.id];
-            io.emit('chat-msg', { usuario: 'Sistema', texto: `${socket.nome} saiu da sala.` });
-            io.emit('lista-operadores', operadoresOnline);
-            socket.broadcast.emit('usuario-saiu-voz', socket.id);
+        if (transmissorAtual === socket.id) {
+            transmissorAtual = null;
+            socket.broadcast.emit('parou-tela');
         }
+        delete operadores[socket.id];
+        io.emit('lista-operadores', operadores);
+        socket.broadcast.emit('usuario-saiu-voz', socket.id);
     });
 });
 
-const PORTA = process.env.PORT || 3000;
-server.listen(PORTA, () => {
-    console.log(`Servidor APP G.A.S oficial rodando na porta ${PORTA}`);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Servidor APP G.A.S oficial rodando na porta ${PORT}`);
 });
