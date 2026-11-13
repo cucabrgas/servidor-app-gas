@@ -4,25 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APP G.A.S oficial</title>
-    <link rel="icon" type="image/png" href="brasao.png">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0e100e; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Topo */
         #topo { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #181c18; border-bottom: 2px solid #8b2626; }
-        .marca { display: flex; align-items: center; gap: 10px; }
-        .marca img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid #d4af37; }
-        .marca h1 { margin: 0; font-size: 16px; color: #d4af37; letter-spacing: 0.5px; }
+        #topo h1 { margin: 0; font-size: 16px; color: #d4af37; letter-spacing: 0.5px; }
 
-        /* Área de Vídeo */
         #tela-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; position: relative; }
         video { width: 100%; max-width: 1400px; max-height: 80vh; border-radius: 8px; background: #000; display: none; border: 1px solid #d4af37; cursor: pointer; }
         #aviso-tela { color: #8c968c; font-size: 1.05rem; text-align: center; }
 
-        /* Barra de Controles */
-        #controles { position: absolute; bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; background: #181c18; padding: 10px 18px; border-radius: 8px; border: 1px solid #2f362f; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        button { padding: 9px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; transition: 0.15s; }
+        #controles { position: absolute; bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; background: #181c18; padding: 10px 18px; border-radius: 8px; border: 1px solid #2f362f; z-index: 10; }
+        button { padding: 9px 16px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px; }
         button:hover { opacity: 0.9; }
         .btn-verde { background: #23a559; color: #fff; }
         .btn-vermelho { background: #da373c; color: #fff; }
@@ -36,12 +30,9 @@
 </head>
 <body>
     <div id="topo">
-        <div class="marca">
-            <img src="brasao.png" alt="Brasão G.A.S" onerror="this.style.display='none'">
-            <h1>APP G.A.S OFICIAL — TRANSMISSÃO</h1>
-        </div>
+        <h1>APP G.A.S OFICIAL — TRANSMISSÃO</h1>
         <div>
-            <button type="button" id="btn-link" class="btn-dourado">🔗 Copiar Link</button>
+            <button type="button" class="btn-dourado" onclick="copiarLink()">🔗 Copiar Link</button>
             <span id="status-link"></span>
         </div>
     </div>
@@ -51,147 +42,157 @@
         <video id="video-tela" autoplay playsinline></video>
         
         <div id="controles">
-            <button type="button" id="btn-compartilhar" class="btn-verde">🖥️ Compartilhar Tela</button>
-            <button type="button" id="btn-parar" class="btn-vermelho" style="display:none;">⏹️ Parar Transmissão</button>
+            <button type="button" id="btn-compartilhar" class="btn-verde" onclick="iniciarTela()">🖥️ Compartilhar Tela</button>
+            <button type="button" id="btn-parar" class="btn-vermelho" style="display:none;" onclick="pararTela()">⏹️ Parar Transmissão</button>
             
             <div id="box-vol-tela" class="controle-vol-tela" title="Volume do áudio compartilhado">
                 <span>🔊</span>
-                <input type="range" id="slider-vol-tela" min="0" max="1" step="0.05" value="0.8">
+                <input type="range" id="slider-vol-tela" min="0" max="1" step="0.05" value="0.8" oninput="mudarVolume(this.value)">
             </div>
 
-            <button type="button" id="btn-fullscreen" class="btn-cinza" style="display:none;">⛶ Tela Cheia</button>
+            <button type="button" id="btn-fullscreen" class="btn-cinza" style="display:none;" onclick="telaCheia()">⛶ Tela Cheia</button>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-        const configIce = {
+        var socket = io();
+        var streamTela = null;
+        var conexoesTela = {};
+        var configIce = {
             iceServers: [
-                { urls: 'stun:://google.com' },
                 { urls: 'stun:://google.com' },
                 { urls: 'stun:://google.com' }
             ]
         };
 
-        const video = document.getElementById('video-tela');
-        const aviso = document.getElementById('aviso-tela');
-        const btnCompartilhar = document.getElementById('btn-compartilhar');
-        const btnParar = document.getElementById('btn-parar');
-        const btnFullscreen = document.getElementById('btn-fullscreen');
-        const boxVolTela = document.getElementById('box-vol-tela');
-        const sliderVolTela = document.getElementById('slider-vol-tela');
-
-        let streamTela = null;
-        const conexoesTela = {};
-
-        document.getElementById('btn-link').addEventListener('click', () => {
-            navigator.clipboard.writeText(window.location.href);
-            const status = document.getElementById('status-link');
-            status.innerText = ' Copiado!';
-            setTimeout(() => { status.innerText = ''; }, 2500);
-        });
-
-        function mostrarVideo(stream) {
-            video.srcObject = stream;
-            video.style.display = 'block';
-            aviso.style.display = 'none';
-            btnFullscreen.style.display = 'inline-block';
-
-            if (streamTela && stream.id === streamTela.id) {
-                video.muted = true;
-                boxVolTela.style.display = 'none';
-            } else {
-                video.muted = false;
-                video.volume = parseFloat(sliderVolTela.value);
-                boxVolTela.style.display = 'flex';
-            }
-        }
-
-        function esconderVideo() {
-            if (document.fullscreenElement) document.exitFullscreen();
-            video.srcObject = null;
-            video.style.display = 'none';
-            aviso.style.display = 'block';
-            btnFullscreen.style.display = 'none';
-            boxVolTela.style.display = 'none';
-        }
-
-        function pararCompartilhamento() {
-            if (streamTela) {
-                streamTela.getTracks().forEach(t => t.stop());
-                streamTela = null;
-            }
-            Object.keys(conexoesTela).forEach((id) => {
-                conexoesTela[id].close();
-                delete conexoesTela[id];
-            });
-            esconderVideo();
-            btnCompartilhar.style.display = 'inline-block';
-            btnParar.style.display = 'none';
-            socket.emit('parou-tela');
-        }
-
-        btnCompartilhar.addEventListener('click', async () => {
+        async function iniciarTela() {
             try {
                 streamTela = await navigator.mediaDevices.getDisplayMedia({
-                    video: { frameRate: { ideal: 60 } },
+                    video: true,
                     audio: true
                 });
 
-                mostrarVideo(streamTela);
-                btnCompartilhar.style.display = 'none';
-                btnParar.style.display = 'inline-block';
-                
-                const faixaVideo = streamTela.getVideoTracks().at(0);
-                if (faixaVideo) faixaVideo.onended = pararCompartilhamento;
+                var video = document.getElementById('video-tela');
+                video.srcObject = streamTela;
+                video.style.display = 'block';
+                video.muted = true;
+
+                document.getElementById('aviso-tela').style.display = 'none';
+                document.getElementById('btn-compartilhar').style.display = 'none';
+                document.getElementById('btn-parar').style.display = 'inline-block';
+                document.getElementById('btn-fullscreen').style.display = 'inline-block';
+                document.getElementById('box-vol-tela').style.display = 'none';
+
+                var faixa = streamTela.getVideoTracks().at(0);
+                if (faixa) faixa.onended = pararTela;
 
                 socket.emit('iniciou-tela');
             } catch (err) {
                 if (err.name !== 'NotAllowedError') {
-                    alert('Erro ao compartilhar tela: ' + err.message);
+                    alert('Erro ao capturar tela: ' + err.message);
                 }
             }
-        });
+        }
 
-        socket.on('solicitar-conexao', () => {
+        function pararTela() {
+            if (streamTela) {
+                streamTela.getTracks().forEach(function(t) { t.stop(); });
+                streamTela = null;
+            }
+            Object.keys(conexoesTela).forEach(function(id) {
+                conexoesTela[id].close();
+                delete conexoesTela[id];
+            });
+
+            if (document.fullscreenElement) document.exitFullscreen();
+            var video = document.getElementById('video-tela');
+            video.srcObject = null;
+            video.style.display = 'none';
+
+            document.getElementById('aviso-tela').style.display = 'block';
+            document.getElementById('btn-compartilhar').style.display = 'inline-block';
+            document.getElementById('btn-parar').style.display = 'none';
+            document.getElementById('btn-fullscreen').style.display = 'none';
+            document.getElementById('box-vol-tela').style.display = 'none';
+
+            socket.emit('parou-tela');
+        }
+
+        function copiarLink() {
+            navigator.clipboard.writeText(window.location.href);
+            var st = document.getElementById('status-link');
+            st.innerText = ' Copiado!';
+            setTimeout(function() { st.innerText = ''; }, 2500);
+        }
+
+        function mudarVolume(val) {
+            var video = document.getElementById('video-tela');
+            video.volume = parseFloat(val);
+            video.muted = (parseFloat(val) === 0);
+        }
+
+        function telaCheia() {
+            var video = document.getElementById('video-tela');
+            if (!document.fullscreenElement) {
+                if (video.requestFullscreen) video.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        document.getElementById('video-tela').addEventListener('dblclick', telaCheia);
+
+        socket.on('solicitar-conexao', function() {
             if (!streamTela) {
                 socket.emit('quero-assistir');
             }
         });
 
-        socket.on('pedir-tela', async (dados) => {
+        socket.on('pedir-tela', async function(dados) {
             if (!streamTela || !dados.para) return;
-            const idEspectador = dados.para;
+            var idEspectador = dados.para;
             if (conexoesTela[idEspectador]) conexoesTela[idEspectador].close();
 
-            const pc = new RTCPeerConnection(configIce);
+            var pc = new RTCPeerConnection(configIce);
             conexoesTela[idEspectador] = pc;
-            streamTela.getTracks().forEach(track => pc.addTrack(track, streamTela));
+            streamTela.getTracks().forEach(function(track) {
+                pc.addTrack(track, streamTela);
+            });
 
-            pc.onicecandidate = (e) => {
+            pc.onicecandidate = function(e) {
                 if (e.candidate) {
                     socket.emit('sinal-tela', { para: idEspectador, sinal: { candidate: e.candidate } });
                 }
             };
 
-            const oferta = await pc.createOffer();
+            var oferta = await pc.createOffer();
             await pc.setLocalDescription(oferta);
             socket.emit('sinal-tela', { para: idEspectador, sinal: { sdp: pc.localDescription } });
         });
 
-        socket.on('sinal-tela', async (dados) => {
-            const idRemetente = dados.de;
-            let pc = conexoesTela[idRemetente];
+        socket.on('sinal-tela', async function(dados) {
+            var idRemetente = dados.de;
+            var pc = conexoesTela[idRemetente];
 
             if (!pc) {
                 pc = new RTCPeerConnection(configIce);
                 conexoesTela[idRemetente] = pc;
-                pc.ontrack = (e) => {
-                    const streamRecebido = e.streams.at(0);
-                    if (streamRecebido) mostrarVideo(streamRecebido);
+                pc.ontrack = function(e) {
+                    var streamRecebido = e.streams.at(0);
+                    if (streamRecebido) {
+                        var video = document.getElementById('video-tela');
+                        video.srcObject = streamRecebido;
+                        video.style.display = 'block';
+                        video.muted = false;
+                        video.volume = parseFloat(document.getElementById('slider-vol-tela').value);
+
+                        document.getElementById('aviso-tela').style.display = 'none';
+                        document.getElementById('btn-fullscreen').style.display = 'inline-block';
+                        document.getElementById('box-vol-tela').style.display = 'flex';
+                    }
                 };
-                pc.onicecandidate = (e) => {
+                pc.onicecandidate = function(e) {
                     if (e.candidate) {
                         socket.emit('sinal-tela', { para: idRemetente, sinal: { candidate: e.candidate } });
                     }
@@ -201,7 +202,7 @@
             if (dados.sinal.sdp) {
                 await pc.setRemoteDescription(new RTCSessionDescription(dados.sinal.sdp));
                 if (dados.sinal.sdp.type === 'offer') {
-                    const resposta = await pc.createAnswer();
+                    var resposta = await pc.createAnswer();
                     await pc.setLocalDescription(resposta);
                     socket.emit('sinal-tela', { para: idRemetente, sinal: { sdp: pc.localDescription } });
                 }
@@ -210,16 +211,9 @@
             }
         });
 
-        socket.on('parou-tela', () => {
-            Object.keys(conexoesTela).forEach((id) => {
-                if (!streamTela) {
+        socket.on('parou-tela', function() {
+            if (!streamTela) {
+                Object.keys(conexoesTela).forEach(function(id) {
                     conexoesTela[id].close();
                     delete conexoesTela[id];
-                }
-            });
-            esconderVideo();
-        });
-
-        btnParar.addEventListener('click', pararCompartilhamento);
-
-        sliderVolTela.addEventListener('input', () => {
+                });
