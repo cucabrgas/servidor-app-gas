@@ -125,24 +125,35 @@ io.on("connection", (socket) => {
     });
 
     socket.on("mensagem-chat", (dados, responder) => {
+        const resposta = (conteudo) => {
+            if (typeof responder === "function") {
+                responder(conteudo);
+            }
+        };
+
         const pessoa = participantes.get(socket.id);
-        if (!pessoa) return;
+
+        if (!pessoa) {
+            resposta({ ok: false, erro: "Entre na sala primeiro." });
+            return;
+        }
 
         const texto = String(dados?.texto || "")
             .trim()
             .slice(0, 500);
 
-        if (!texto) return;
+        if (!texto) {
+            resposta({ ok: false, erro: "Digite uma mensagem." });
+            return;
+        }
 
         const agora = Date.now();
 
         if (agora - pessoa.ultimaMensagem < 800) {
-            if (typeof responder === "function") {
-                responder({
-                    ok: false,
-                    erro: "Aguarde um instante entre as mensagens."
-                });
-            }
+            resposta({
+                ok: false,
+                erro: "Aguarde um instante entre as mensagens."
+            });
             return;
         }
 
@@ -162,10 +173,7 @@ io.on("connection", (socket) => {
         }
 
         io.emit("mensagem-chat", mensagem);
-
-        if (typeof responder === "function") {
-            responder({ ok: true });
-        }
+        resposta({ ok: true });
     });
 
     socket.on("iniciou-tela", () => {
