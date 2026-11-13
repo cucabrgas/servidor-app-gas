@@ -29,7 +29,7 @@
             font-family: "Segoe UI", sans-serif;
         }
 
-        button, input { font: inherit; }
+        button, input, select { font: inherit; }
 
         button {
             padding: 9px 13px;
@@ -41,7 +41,13 @@
         }
 
         button:hover { filter: brightness(1.1); }
-        button:disabled { opacity: .45; cursor: not-allowed; }
+
+        button:disabled,
+        select:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
         [hidden] { display: none !important; }
 
         .verde { background: #238b4e; color: #fff; }
@@ -74,10 +80,27 @@
 
         #barra {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
             align-items: center;
             padding: 12px 18px;
+        }
+
+        .opcao-captura {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--texto);
+            font-size: 12px;
+        }
+
+        .opcao-captura select {
+            padding: 8px;
+            border: 1px solid var(--borda);
+            border-radius: 6px;
+            background: var(--painel);
+            color: #fff;
+            cursor: pointer;
         }
 
         #status {
@@ -390,6 +413,28 @@
     </header>
 
     <div id="barra">
+        <label class="opcao-captura">
+            Resolução
+            <select id="resolucao-captura">
+                <option value="original">Original</option>
+                <option value="854x480">480p</option>
+                <option value="1280x720">720p</option>
+                <option value="1920x1080" selected>1080p</option>
+                <option value="2560x1440">1440p</option>
+                <option value="3840x2160">2160p / 4K</option>
+            </select>
+        </label>
+
+        <label class="opcao-captura">
+            FPS
+            <select id="fps-captura">
+                <option value="15">15 FPS</option>
+                <option value="24">24 FPS</option>
+                <option value="30" selected>30 FPS</option>
+                <option value="60">60 FPS</option>
+            </select>
+        </label>
+
         <button id="compartilhar" class="verde" disabled>
             Compartilhar Tela
         </button>
@@ -425,6 +470,7 @@
             <div id="abas">
                 <button id="aba-chat" class="dourado">Chat</button>
                 <button id="aba-pessoas" class="cinza">Participantes</button>
+
                 <button
                     id="fechar-lateral"
                     class="cinza"
@@ -448,6 +494,7 @@
                         disabled
                         required
                     >
+
                     <button id="enviar-chat" class="verde" disabled>
                         Enviar
                     </button>
@@ -496,8 +543,13 @@
             $("compartilhar").disabled = !registrado || capturando;
             $("compartilhar").hidden = Boolean(streamLocal);
             $("parar").hidden = !streamLocal;
+
             $("texto-chat").disabled = !registrado;
             $("enviar-chat").disabled = !registrado;
+
+            const bloquearQualidade = capturando || Boolean(streamLocal);
+            $("resolucao-captura").disabled = bloquearQualidade;
+            $("fps-captura").disabled = bloquearQualidade;
         }
 
         function atualizarAviso() {
@@ -524,10 +576,7 @@
                 } else {
                     card.video.muted =
                         card.video.volume === 0 ||
-                        Boolean(
-                            selecionado &&
-                            selecionado !== card.video
-                        );
+                        Boolean(selecionado && selecionado !== card.video);
                 }
 
                 const estaFullscreen =
@@ -558,8 +607,10 @@
 
             $("painel-chat").hidden = aba !== "chat";
             $("painel-pessoas").hidden = aba !== "pessoas";
+
             $("aba-chat").className =
                 aba === "chat" ? "dourado" : "cinza";
+
             $("aba-pessoas").className =
                 aba === "pessoas" ? "dourado" : "cinza";
 
@@ -893,17 +944,43 @@
                 return;
             }
 
+            const resolucao = $("resolucao-captura").value;
+            const fps = Number($("fps-captura").value);
+
+            const configuracaoVideo = {
+                frameRate: {
+                    ideal: fps,
+                    max: fps
+                }
+            };
+
+            if (resolucao !== "original") {
+                const [largura, altura] = resolucao
+                    .split("x")
+                    .map(Number);
+
+                configuracaoVideo.width = {
+                    ideal: largura,
+                    max: largura
+                };
+
+                configuracaoVideo.height = {
+                    ideal: altura,
+                    max: altura
+                };
+            }
+
             capturando = true;
             atualizarBotoes();
 
             try {
                 const stream =
                     await navigator.mediaDevices.getDisplayMedia({
-                        video: true,
+                        video: configuracaoVideo,
                         audio: true
                     });
 
-                if (!registrado || !socket.connected) {
+                if (!registrado || !socket?.connected) {
                     stream.getTracks().forEach((track) => track.stop());
                     status("Reconecte-se antes de compartilhar.");
                     return;
@@ -920,20 +997,42 @@
 
                 socket.emit("iniciou-tela");
 
-                status(
-                    streamLocal.getAudioTracks().length
-                        ? "Compartilhando tela com faixa de áudio."
-                        : "Compartilhando tela sem faixa de áudio."
-                );
-            } catch (erro) {
-                console.error(erro);
+                const config = faixa?.getSettings() || {};
+
+                const resolucaoAtual = config.width && config.height
+                    ? `${config.width} × ${config.height}`
+                    : "resolução não informada";
+
+                const fpsAtual = Number.isFinite(config.frameRate)
+                    ? `${config.frameRate.toFixed(0)} FPS`
+                    : "FPS não informado";
+
+                const audio = streamLocal.getAudioTracks().length
+                    ? "com faixa de áudio"
+                    : "sem faixa de áudio";
 
                 status(
+                    `Captura configurada: ${resolucaoAtual} · ` +
+                    `${fpsAtual} · ${audio}.`
+                );
+            } catch (erro) {
+                console.error("Erro ao capturar:", erro);
+
+                if (
                     erro.name === "NotAllowedError" ||
                     erro.name === "AbortError"
-                        ? "Compartilhamento cancelado ou não autorizado."
-                        : "Erro ao capturar: " + erro.message
-                );
+                ) {
+                    status(
+                        "Compartilhamento cancelado ou não autorizado."
+                    );
+                } else if (erro.name === "OverconstrainedError") {
+                    status(
+                        "Essa configuração não pôde ser aplicada. " +
+                        "Tente uma resolução menor ou menos FPS."
+                    );
+                } else {
+                    status("Erro ao capturar: " + erro.message);
+                }
             } finally {
                 capturando = false;
                 atualizarBotoes();
@@ -1172,7 +1271,10 @@
                                 "Recebido"
                             );
                     } catch (erro) {
-                        console.debug("Estatísticas indisponíveis:", erro);
+                        console.debug(
+                            "Estatísticas indisponíveis:",
+                            erro
+                        );
                     }
                 }
             } finally {
@@ -1233,6 +1335,7 @@
 
                 limparRemotos();
                 atualizarBotoes();
+
                 $("lista-pessoas").replaceChildren();
                 $("abrir-pessoas").textContent = "Participantes — 0";
 
@@ -1311,6 +1414,7 @@
 
             socket.on("parou-tela", (dados) => {
                 if (!dados?.de) return;
+
                 fecharEntrada(recebimentos, dados.de);
                 removerCard(dados.de);
             });
@@ -1350,7 +1454,9 @@
 
             socket.emit("mensagem-chat", { texto }, (resposta) => {
                 if (!resposta?.ok) {
-                    status(resposta?.erro || "Não foi possível enviar.");
+                    status(
+                        resposta?.erro || "Não foi possível enviar."
+                    );
 
                     if (!$("texto-chat").value) {
                         $("texto-chat").value = texto;
