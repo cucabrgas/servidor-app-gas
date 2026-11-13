@@ -41,9 +41,7 @@
         }
 
         button:hover { filter: brightness(1.1); }
-
-        button:disabled,
-        select:disabled {
+        button:disabled, select:disabled {
             opacity: .45;
             cursor: not-allowed;
         }
@@ -100,7 +98,6 @@
             border-radius: 6px;
             background: var(--painel);
             color: #fff;
-            cursor: pointer;
         }
 
         #status {
@@ -113,7 +110,7 @@
 
         #layout {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 320px;
+            grid-template-columns: minmax(0, 1fr) 330px;
             gap: 15px;
             padding: 0 18px 18px;
             align-items: start;
@@ -257,7 +254,7 @@
         }
 
         #mensagens {
-            height: 390px;
+            height: 360px;
             overflow-y: auto;
             padding: 12px;
         }
@@ -364,6 +361,77 @@
             margin-top: 12px;
             color: #ffb1b1;
             font-size: 13px;
+        }
+
+        #anexos-chat {
+            padding: 10px;
+            border-top: 1px solid var(--borda);
+        }
+
+        #anexos-chat small {
+            display: block;
+            margin-top: 6px;
+            color: var(--texto);
+            font-size: 11px;
+        }
+
+        #preview-anexo {
+            margin-top: 10px;
+            padding: 9px;
+            background: #101510;
+            border: 1px solid var(--borda);
+            border-radius: 7px;
+        }
+
+        #preview-imagem {
+            display: block;
+            max-width: 100%;
+            max-height: 180px;
+            margin: 0 auto 8px;
+            object-fit: contain;
+        }
+
+        #info-imagem {
+            margin-bottom: 8px;
+            color: var(--texto);
+            font-size: 11px;
+            overflow-wrap: anywhere;
+        }
+
+        .acoes-imagem { display: flex; gap: 8px; }
+
+        .imagem-chat {
+            display: block;
+            max-width: 100%;
+            max-height: 230px;
+            margin-top: 7px;
+            border: 1px solid var(--borda);
+            border-radius: 7px;
+            cursor: zoom-in;
+            object-fit: contain;
+        }
+
+        #visualizador-imagem {
+            width: min(96vw, 1200px);
+            max-width: 96vw;
+            max-height: 95vh;
+            padding: 12px;
+            background: #101510;
+            color: #fff;
+            border: 1px solid var(--dourado);
+            border-radius: 10px;
+        }
+
+        #visualizador-imagem::backdrop {
+            background: rgba(0, 0, 0, .9);
+        }
+
+        #imagem-ampliada {
+            display: block;
+            max-width: 100%;
+            max-height: 80vh;
+            margin: 10px auto 0;
+            object-fit: contain;
         }
 
         @media (max-width: 850px) {
@@ -483,6 +551,56 @@
             <section id="painel-chat">
                 <div id="mensagens" aria-live="polite"></div>
 
+                <div id="anexos-chat">
+                    <button
+                        type="button"
+                        id="selecionar-imagem"
+                        class="cinza"
+                        disabled
+                    >
+                        Enviar imagem
+                    </button>
+
+                    <input
+                        type="file"
+                        id="arquivo-imagem"
+                        accept="image/jpeg,image/png,image/webp"
+                        hidden
+                    >
+
+                    <small>
+                        JPG, PNG ou WebP. Até 10 MB por imagem.
+                        Cole prints no campo de mensagem com Ctrl + V.
+                    </small>
+
+                    <div id="preview-anexo" hidden>
+                        <img
+                            id="preview-imagem"
+                            alt="Prévia da imagem selecionada"
+                        >
+
+                        <div id="info-imagem"></div>
+
+                        <div class="acoes-imagem">
+                            <button
+                                type="button"
+                                id="confirmar-imagem"
+                                class="verde"
+                            >
+                                Enviar
+                            </button>
+
+                            <button
+                                type="button"
+                                id="cancelar-imagem"
+                                class="cinza"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <form id="form-chat">
                     <input
                         type="text"
@@ -507,6 +625,14 @@
         </aside>
     </div>
 
+    <dialog id="visualizador-imagem">
+        <button type="button" id="fechar-imagem" class="cinza">
+            Fechar
+        </button>
+
+        <img id="imagem-ampliada" alt="Imagem ampliada do chat">
+    </dialog>
+
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
@@ -518,6 +644,8 @@
             ]
         };
 
+        const LIMITE_IMAGEM_CHAT = 10 * 1024 * 1024;
+
         let socket = null;
         let nickname = "";
         let registrado = false;
@@ -528,6 +656,10 @@
         let naoLidas = 0;
         let atualizandoEstatisticas = false;
         let geracaoConexao = 0;
+
+        let imagemPendente = null;
+        let previewUrl = null;
+        let enviandoImagem = false;
 
         const nomes = new Map();
         const cards = new Map();
@@ -547,9 +679,17 @@
             $("texto-chat").disabled = !registrado;
             $("enviar-chat").disabled = !registrado;
 
-            const bloquearQualidade = capturando || Boolean(streamLocal);
-            $("resolucao-captura").disabled = bloquearQualidade;
-            $("fps-captura").disabled = bloquearQualidade;
+            $("selecionar-imagem").disabled =
+                !registrado || enviandoImagem;
+
+            $("confirmar-imagem").disabled =
+                !registrado || enviandoImagem;
+
+            $("cancelar-imagem").disabled = enviandoImagem;
+
+            const bloquear = capturando || Boolean(streamLocal);
+            $("resolucao-captura").disabled = bloquear;
+            $("fps-captura").disabled = bloquear;
         }
 
         function atualizarAviso() {
@@ -571,21 +711,16 @@
             }
 
             for (const [id, card] of cards) {
-                if (id === "local") {
-                    card.video.muted = true;
-                } else {
-                    card.video.muted =
-                        card.video.volume === 0 ||
-                        Boolean(selecionado && selecionado !== card.video);
-                }
+                card.video.muted = id === "local"
+                    ? true
+                    : card.video.volume === 0 ||
+                      Boolean(selecionado && selecionado !== card.video);
 
-                const estaFullscreen =
+                card.botaoFullscreen.textContent =
                     fullscreen === card.elemento ||
-                    fullscreen === card.video;
-
-                card.botaoFullscreen.textContent = estaFullscreen
-                    ? "Sair da tela cheia"
-                    : "Tela cheia";
+                    fullscreen === card.video
+                        ? "Sair da tela cheia"
+                        : "Tela cheia";
             }
         }
 
@@ -621,6 +756,52 @@
             }
         }
 
+        function adicionarImagemNaMensagem(item, dados) {
+            if (dados.tipo !== "imagem" || !dados.imagem?.url) return;
+
+            let url;
+
+            try {
+                url = new URL(dados.imagem.url, location.origin);
+            } catch {
+                return;
+            }
+
+            if (
+                url.origin !== location.origin ||
+                !/^\/api\/imagens\/[a-f0-9-]+$/i.test(url.pathname)
+            ) {
+                return;
+            }
+
+            const imagem = document.createElement("img");
+            imagem.className = "imagem-chat";
+            imagem.src = url.href;
+            imagem.alt = `Imagem enviada por ${dados.nickname}`;
+            imagem.loading = "lazy";
+
+            imagem.onclick = () => {
+                $("imagem-ampliada").src = url.href;
+
+                if (!$("visualizador-imagem").open) {
+                    $("visualizador-imagem").showModal();
+                }
+            };
+
+            imagem.onload = () => {
+                $("mensagens").scrollTop = $("mensagens").scrollHeight;
+            };
+
+            imagem.onerror = () => {
+                const aviso = document.createElement("div");
+                aviso.className = "aviso-chat";
+                aviso.textContent = "Imagem expirada ou indisponível.";
+                imagem.replaceWith(aviso);
+            };
+
+            item.append(imagem);
+        }
+
         function adicionarMensagem(dados, sistema = false, contar = true) {
             const item = document.createElement("div");
 
@@ -647,10 +828,12 @@
 
                 const texto = document.createElement("div");
                 texto.className = "mensagem-texto";
-                texto.textContent = dados.texto;
+                texto.textContent = dados.texto || "";
 
                 topo.append(nome, horario);
                 item.append(topo, texto);
+
+                adicionarImagemNaMensagem(item, dados);
             }
 
             $("mensagens").append(item);
@@ -749,6 +932,7 @@
             const etiqueta = document.createElement("span");
             etiqueta.className = "etiqueta";
             etiqueta.textContent = local ? "Sua tela" : "Ao vivo";
+
             topo.append(rotulo, etiqueta);
 
             const video = document.createElement("video");
@@ -948,10 +1132,7 @@
             const fps = Number($("fps-captura").value);
 
             const configuracaoVideo = {
-                frameRate: {
-                    ideal: fps,
-                    max: fps
-                }
+                frameRate: { ideal: fps, max: fps }
             };
 
             if (resolucao !== "original") {
@@ -1016,18 +1197,16 @@
                     `${fpsAtual} · ${audio}.`
                 );
             } catch (erro) {
-                console.error("Erro ao capturar:", erro);
+                console.error(erro);
 
                 if (
                     erro.name === "NotAllowedError" ||
                     erro.name === "AbortError"
                 ) {
-                    status(
-                        "Compartilhamento cancelado ou não autorizado."
-                    );
+                    status("Compartilhamento cancelado ou não autorizado.");
                 } else if (erro.name === "OverconstrainedError") {
                     status(
-                        "Essa configuração não pôde ser aplicada. " +
+                        "Configuração indisponível. " +
                         "Tente uma resolução menor ou menos FPS."
                     );
                 } else {
@@ -1271,10 +1450,7 @@
                                 "Recebido"
                             );
                     } catch (erro) {
-                        console.debug(
-                            "Estatísticas indisponíveis:",
-                            erro
-                        );
+                        console.debug("Estatísticas indisponíveis:", erro);
                     }
                 }
             } finally {
@@ -1429,6 +1605,102 @@
             });
         }
 
+        function limparPreviewImagem() {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            previewUrl = null;
+            imagemPendente = null;
+
+            $("arquivo-imagem").value = "";
+            $("preview-imagem").removeAttribute("src");
+            $("preview-anexo").hidden = true;
+            $("info-imagem").textContent = "";
+        }
+
+        function prepararImagem(arquivo) {
+            if (!registrado) {
+                status("Entre na sala primeiro.");
+                return;
+            }
+
+            if (enviandoImagem || !arquivo) return;
+
+            const tipos = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!tipos.includes(arquivo.type)) {
+                status("Envie somente imagens JPG, PNG ou WebP.");
+                return;
+            }
+
+            if (arquivo.size > LIMITE_IMAGEM_CHAT) {
+                status("A imagem ultrapassa o limite de 10 MB.");
+                return;
+            }
+
+            if (arquivo.size === 0) {
+                status("Esse arquivo está vazio.");
+                return;
+            }
+
+            limparPreviewImagem();
+
+            imagemPendente = arquivo;
+            previewUrl = URL.createObjectURL(arquivo);
+
+            $("preview-imagem").src = previewUrl;
+
+            const tamanho = (
+                arquivo.size / (1024 * 1024)
+            ).toFixed(2);
+
+            $("info-imagem").textContent =
+                `${arquivo.name || "Print"} · ${tamanho} MB`;
+
+            $("preview-anexo").hidden = false;
+            abrirPainel("chat");
+        }
+
+        function obterTokenUpload() {
+            return new Promise((resolve, reject) => {
+                if (!registrado || !socket?.connected) {
+                    reject(new Error("Você não está conectado."));
+                    return;
+                }
+
+                socket.timeout(5000).emit(
+                    "solicitar-upload-token",
+                    (erro, resposta) => {
+                        if (erro) {
+                            reject(
+                                new Error(
+                                    "O servidor não respondeu. Tente novamente."
+                                )
+                            );
+                            return;
+                        }
+
+                        if (!resposta?.ok) {
+                            reject(
+                                new Error(
+                                    resposta?.erro ||
+                                    "Não foi possível autorizar o envio."
+                                )
+                            );
+                            return;
+                        }
+
+                        resolve(resposta.token);
+                    }
+                );
+            });
+        }
+
         $("form-entrada").onsubmit = (evento) => {
             evento.preventDefault();
 
@@ -1447,16 +1719,13 @@
             evento.preventDefault();
 
             const texto = $("texto-chat").value.trim();
-
             if (!texto || !registrado || !socket?.connected) return;
 
             $("texto-chat").value = "";
 
             socket.emit("mensagem-chat", { texto }, (resposta) => {
                 if (!resposta?.ok) {
-                    status(
-                        resposta?.erro || "Não foi possível enviar."
-                    );
+                    status(resposta?.erro || "Não foi possível enviar.");
 
                     if (!$("texto-chat").value) {
                         $("texto-chat").value = texto;
@@ -1471,7 +1740,6 @@
 
         $("abrir-chat").onclick = () => abrirPainel("chat");
         $("aba-chat").onclick = () => abrirPainel("chat");
-
         $("abrir-pessoas").onclick = () => abrirPainel("pessoas");
         $("aba-pessoas").onclick = () => abrirPainel("pessoas");
 
@@ -1488,6 +1756,91 @@
                 window.prompt("Copie o link:", location.href);
             }
         };
+
+        $("selecionar-imagem").onclick = () => {
+            $("arquivo-imagem").click();
+        };
+
+        $("arquivo-imagem").onchange = () => {
+            prepararImagem($("arquivo-imagem").files[0]);
+        };
+
+        $("cancelar-imagem").onclick = () => {
+            if (!enviandoImagem) limparPreviewImagem();
+        };
+
+        $("texto-chat").addEventListener("paste", (evento) => {
+            if (!registrado || enviandoImagem) return;
+
+            const itens = Array.from(
+                evento.clipboardData?.items || []
+            );
+
+            const itemImagem = itens.find((item) => {
+                return (
+                    item.kind === "file" &&
+                    item.type.startsWith("image/")
+                );
+            });
+
+            if (!itemImagem) return;
+
+            evento.preventDefault();
+            prepararImagem(itemImagem.getAsFile());
+        });
+
+        $("confirmar-imagem").onclick = async () => {
+            if (!imagemPendente || enviandoImagem || !registrado) return;
+
+            enviandoImagem = true;
+            atualizarBotoes();
+            status("Enviando imagem...");
+
+            try {
+                const token = await obterTokenUpload();
+                const dados = new FormData();
+
+                dados.append(
+                    "imagem",
+                    imagemPendente,
+                    imagemPendente.name || "print.png"
+                );
+
+                const resposta = await fetch("/api/imagens", {
+                    method: "POST",
+                    headers: {
+                        "X-Upload-Token": token
+                    },
+                    body: dados
+                });
+
+                const resultado = await resposta.json().catch(() => ({
+                    erro: "Resposta inválida do servidor."
+                }));
+
+                if (!resposta.ok || !resultado.ok) {
+                    throw new Error(
+                        resultado.erro || "Não foi possível enviar."
+                    );
+                }
+
+                limparPreviewImagem();
+                status("Imagem enviada!");
+            } catch (erro) {
+                status("Erro: " + erro.message);
+            } finally {
+                enviandoImagem = false;
+                atualizarBotoes();
+            }
+        };
+
+        $("fechar-imagem").onclick = () => {
+            $("visualizador-imagem").close();
+        };
+
+        $("visualizador-imagem").addEventListener("close", () => {
+            $("imagem-ampliada").removeAttribute("src");
+        });
 
         setInterval(atualizarEstatisticas, 1000);
     </script>
